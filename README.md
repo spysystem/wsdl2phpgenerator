@@ -132,6 +132,7 @@ $generator->generate(
     ))
 );
 ```
+
 #### `operationNames`
 
 A comma-separated list or array of service operations to generate. This will only generate types that are needed for selected operations. The generated service class will only contain selected operation.
@@ -237,7 +238,10 @@ $generator->generate(
         	'connection_timeout' => 60
     ))
 ));
-````
+```
+#### `bracketedArrays`
+
+If enabled, arrays created inside the main Service class will use the Php 5.4+ notation for arrays(using "[]" instead of "array()").
 
 ## Versioning
 
