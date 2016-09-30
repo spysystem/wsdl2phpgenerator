@@ -1,4 +1,4 @@
-3.4.1 / 2016-09-30
+3.4.1 / 2017-11-17
 ==================
 
  * Added support for generating bracketed arrays (for php 5.4+)
