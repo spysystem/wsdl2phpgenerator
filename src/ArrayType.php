@@ -66,7 +66,7 @@ class ArrayType extends ComplexType
                 false,
                 false
             ),
-            '  return isset($this->' . $this->field->getName() . '[$offset]);',
+            "\t".'return isset($this->' . $this->field->getName() . '[$offset]);',
             $offsetExistsDock
         );
         $this->class->addFunction($offsetExists);
@@ -85,7 +85,7 @@ class ArrayType extends ComplexType
                 false,
                 false
             ),
-            '  return $this->' . $this->field->getName() . '[$offset];',
+            "\t".'return $this->' . $this->field->getName() . '[$offset];',
             $offsetGetDock
         );
         $this->class->addFunction($offsetGet);
@@ -106,11 +106,14 @@ class ArrayType extends ComplexType
                 false,
                 false
             ),
-            '  if (!isset($offset)) {' . PHP_EOL .
-            '    $this->' . $this->field->getName() . '[] = $value;' . PHP_EOL .
-            '  } else {' . PHP_EOL .
-            '    $this->' . $this->field->getName() . '[$offset] = $value;' . PHP_EOL .
-            '  }',
+			"\t".'if (!isset($offset))' . PHP_EOL .
+			"\t".'{' . PHP_EOL .
+			"\t\t".'$this->' . $this->field->getName() . '[] = $value;' . PHP_EOL .
+			"\t".'}' . PHP_EOL .
+			"\t".'else' . PHP_EOL .
+			"\t".'{' . PHP_EOL .
+			"\t\t".'$this->' . $this->field->getName() . '[$offset] = $value;' . PHP_EOL .
+			"\t".'}',
             $offsetSetDock
         );
         $this->class->addFunction($offsetSet);
@@ -129,7 +132,7 @@ class ArrayType extends ComplexType
                 false,
                 false
             ),
-            '  unset($this->' . $this->field->getName() . '[$offset]);',
+			"\t".'unset($this->' . $this->field->getName() . '[$offset]);',
             $offsetUnsetDock
         );
         $this->class->addFunction($offsetUnset);
@@ -151,7 +154,7 @@ class ArrayType extends ComplexType
                 false,
                 false
             ),
-            '  return current($this->' . $this->field->getName() . ');',
+			"\t".'return current($this->' . $this->field->getName() . ');',
             $currentDock
         );
         $this->class->addFunction($current);
@@ -167,7 +170,7 @@ class ArrayType extends ComplexType
                 false,
                 false
             ),
-            '  next($this->' . $this->field->getName() . ');',
+			"\t".'next($this->' . $this->field->getName() . ');',
             $nextDock
         );
         $this->class->addFunction($next);
@@ -183,7 +186,7 @@ class ArrayType extends ComplexType
                 false,
                 false
             ),
-            '  return key($this->' . $this->field->getName() . ');',
+			"\t".'return key($this->' . $this->field->getName() . ');',
             $keyDock
         );
         $this->class->addFunction($key);
@@ -199,7 +202,7 @@ class ArrayType extends ComplexType
                 false,
                 false
             ),
-            '  return $this->key() !== null;',
+			"\t".'return $this->key() !== null;',
             $validDock
         );
         $this->class->addFunction($valid);
@@ -215,7 +218,7 @@ class ArrayType extends ComplexType
                 false,
                 false
             ),
-            '  reset($this->' . $this->field->getName() . ');',
+			"\t".'reset($this->' . $this->field->getName() . ');',
             $rewindDock
         );
         $this->class->addFunction($rewind);
@@ -237,7 +240,7 @@ class ArrayType extends ComplexType
                 false,
                 false
             ),
-            '  return count($this->' . $this->field->getName() . ');',
+			"\t".'return count($this->' . $this->field->getName() . ');',
             $countDock
         );
         $this->class->addFunction($count);

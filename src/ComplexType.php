@@ -93,7 +93,7 @@ class ComplexType extends Type
                     $constructorParameters[$name] = Validator::validateTypeHint($type);
                 }
             }
-            $constructorSource .= '  parent::__construct(' . $this->buildParametersString($constructorParameters, false) . ');' . PHP_EOL;
+            $constructorSource .= "\t".'parent::__construct(' . $this->buildParametersString($constructorParameters, false) . ');' . PHP_EOL;
         }
 
         // Add member variables
@@ -110,12 +110,12 @@ class ComplexType extends Type
             if (!$member->getNullable()) {
                 if ($type == '\DateTime') {
                     if ($this->config->get('constructorParamsDefaultToNull')) {
-                        $constructorSource .= '  $this->' . $name . ' = $' . $name . ' ? $' . $name . '->format(\DateTime::ATOM) : null;' . PHP_EOL;
+                        $constructorSource .= "\t".'$this->' . $name . ' = $' . $name . ' ? $' . $name . '->format(\DateTime::ATOM) : null;' . PHP_EOL;
                     } else {
-                        $constructorSource .= '  $this->' . $name . ' = $' . $name . '->format(\DateTime::ATOM);' . PHP_EOL;
+                        $constructorSource .= "\t".'$this->' . $name . ' = $' . $name . '->format(\DateTime::ATOM);' . PHP_EOL;
                     }
                 } else {
-                    $constructorSource .= '  $this->' . $name . ' = $' . $name . ';' . PHP_EOL;
+                    $constructorSource .= "\t".'$this->' . $name . ' = $' . $name . ';' . PHP_EOL;
                 }
                 $constructorComment->addParam(PhpDocElementFactory::getParam($type, $name, ''));
                 $constructorParameters[$name] = $typeHint;
@@ -124,17 +124,24 @@ class ComplexType extends Type
             $getterComment = new PhpDocComment();
             $getterComment->setReturn(PhpDocElementFactory::getReturn($type, ''));
             if ($type == '\DateTime') {
-                $getterCode = '  if ($this->' . $name . ' == null) {' . PHP_EOL
-                    . '    return null;' . PHP_EOL
-                    . '  } else {' . PHP_EOL
-                    . '    try {' . PHP_EOL
-                    . '      return new \DateTime($this->' . $name . ');' . PHP_EOL
-                    . '    } catch (\Exception $e) {' . PHP_EOL
-                    . '      return false;' . PHP_EOL
-                    . '    }' . PHP_EOL
-                    . '  }' . PHP_EOL;
+                $getterCode =
+					"\t".'if ($this->' . $name . ' == null)' . PHP_EOL .
+					"\t".'{' . PHP_EOL .
+                    "\t\t".'return null;' . PHP_EOL .
+					"\t".'}' . PHP_EOL .
+					"\t".'else' . PHP_EOL .
+					"\t".'{' . PHP_EOL .
+					"\t\t".'try' . PHP_EOL .
+					"\t\t".'{' . PHP_EOL .
+					"\t\t\t".'return new \DateTime($this->' . $name . ');' . PHP_EOL .
+					"\t\t".'}' . PHP_EOL .
+					"\t\t".'catch (\Exception $oException)' . PHP_EOL .
+					"\t\t".'{' . PHP_EOL .
+					"\t\t\t".'return false;' . PHP_EOL .
+					"\t\t".'}' . PHP_EOL .
+					"\t".'}' . PHP_EOL;
             } else {
-                $getterCode = '  return $this->' . $name . ';' . PHP_EOL;
+                $getterCode = "\t".'return $this->' . $name . ';' . PHP_EOL;
             }
             $getter = new PhpFunction('public', 'get' . ucfirst($name), '', $getterCode, $getterComment);
             $accessors[] = $getter;
@@ -144,18 +151,22 @@ class ComplexType extends Type
             $setterComment->setReturn(PhpDocElementFactory::getReturn($this->phpNamespacedIdentifier, ''));
             if ($type == '\DateTime') {
                 if ($member->getNullable()) {
-                    $setterCode = '  if ($' . $name . ' == null) {' . PHP_EOL
-                        . '   $this->' . $name . ' = null;' . PHP_EOL
-                        . '  } else {' . PHP_EOL
-                        . '    $this->' . $name . ' = $' . $name . '->format(\DateTime::ATOM);' . PHP_EOL
-                        . '  }' . PHP_EOL;
+                    $setterCode =
+						"\t".'if ($' . $name . ' == null)' . PHP_EOL .
+						"\t".'{' . PHP_EOL .
+						"\t\t".'$this->' . $name . ' = null;' . PHP_EOL .
+						"\t".'}' . PHP_EOL .
+						"\t".'else' . PHP_EOL .
+						"\t".'{' . PHP_EOL .
+						"\t\t".'$this->' . $name . ' = $' . $name . '->format(\DateTime::ATOM);' . PHP_EOL .
+						"\t".'}' . PHP_EOL;
                 } else {
-                    $setterCode = '  $this->' . $name . ' = $' . $name . '->format(\DateTime::ATOM);' . PHP_EOL;
+                    $setterCode = "\t".'$this->' . $name . ' = $' . $name . '->format(\DateTime::ATOM);' . PHP_EOL;
                 }
             } else {
-                $setterCode = '  $this->' . $name . ' = $' . $name . ';' . PHP_EOL;
+                $setterCode = "\t".'$this->' . $name . ' = $' . $name . ';' . PHP_EOL;
             }
-            $setterCode .= '  return $this;' . PHP_EOL;
+            $setterCode .= "\t".'return $this;' . PHP_EOL;
             $setter = new PhpFunction(
                 'public',
                 'set' . ucfirst($name),

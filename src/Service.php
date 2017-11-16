@@ -134,15 +134,29 @@ class Service implements ClassGenerator
         return $this->types;
     }
 
-    /**
-     * @param $content
-     *
-     * @return mixed
-     */
-    protected function adjustArrayNotation($content)
-    {
-        return $this->config->get('bracketedArrays')? str_replace(array('array (', ')'), array('[', ']'), $content): $content;
-    }
+	/**
+	 * @param string $strContent
+	 * @param int    $iExtraTabs
+	 * @return mixed
+	 */
+	protected function adjustArrayNotation(string $strContent, int $iExtraTabs = 0)
+	{
+		$strReturn	= $this->config->get('bracketedArrays')? str_replace(array('array (', ')'), array('[', ']'), $strContent): $strContent;
+		$strReturn	= preg_replace("/ {2}/m", "\t", $strReturn);
+		if($iExtraTabs === 0)
+		{
+			return $strReturn;
+		}
+
+		$arrLines	= explode(PHP_EOL, $strReturn);
+		$strReturn	= '';
+		foreach ($arrLines as $strLine)
+		{
+			$strReturn	.= str_repeat("\t", $iExtraTabs).$strLine . PHP_EOL;
+		}
+
+		return trim($strReturn, PHP_EOL);
+	}
 
     /**
      * Generates the class if not already generated
@@ -161,33 +175,59 @@ class Service implements ClassGenerator
         $name = ucfirst($name);
 
         // Create the class object
-        $comment = new PhpDocComment($this->description);
-        $this->class = new PhpClass($name, false, $this->config->get('soapClientClass'), $comment);
+        $strClassComment = new PhpDocComment($this->description);
+        if(empty($strClassComment)) # cannot be ===, since $this->description can be null...
+		{
+			$strClassComment	= <<< EOT
+/**
+ * Class $name
+ *
+ * @package {$this->config->get('namespaceName')}
+EOT;
+			// Needed because PHPStorm thinks the previous string is a REGEX, due to two /'s on the same block... :/
+			$strClassComment	.= " */\n";
+		}
+        $this->class = new PhpClass($name, false, $this->config->get('soapClientClass'), $strClassComment);
+
+        $this->class->addConstant($this->config->get('inputFile'), 'WsdlUrl');
+
+
+        $oCreateComment	= new PhpDocComment();
+        $oCreateComment->setReturn(PhpDocElementFactory::getReturn($name, ''));
+
+        $strCreateSource	= '	return new static(' . $this->adjustArrayNotation(var_export($this->config->get('soapClientOptions'), true), 1) . ');' . PHP_EOL;
+
+        $oCreateFunction	= new PhpFunction('public', 'Create', '', $strCreateSource, $oCreateComment);
+
+        $this->class->addFunction($oCreateFunction);
 
         // Create the constructor
         $comment = new PhpDocComment();
-        $comment->addParam(PhpDocElementFactory::getParam('string', 'wsdl', 'The wsdl file to use'));
-        $comment->addParam(PhpDocElementFactory::getParam('array', 'options', 'A array of config values'));
+        $comment->addParam(PhpDocElementFactory::getParam('string', 'strWsdl', 'The wsdl file to use'));
+        $comment->addParam(PhpDocElementFactory::getParam('array', 'arrOptions', 'A array of config values'));
+        $comment->addThrows(PhpDocElementFactory::getThrows('\Exception', ''));
 
         $source = '
-  foreach (self::$classmap as $key => $value) {
-    if (!isset($options[\'classmap\'][$key])) {
-      $options[\'classmap\'][$key] = $value;
-    }
-  }' . PHP_EOL;
-        $source .= '  $options = array_merge(' . $this->adjustArrayNotation(var_export($this->config->get('soapClientOptions'), true)) . ', $options);' . PHP_EOL;
-        $source .= '  if (!$wsdl) {' . PHP_EOL;
-        $source .= '    $wsdl = \'' . $this->config->get('inputFile') . '\';' . PHP_EOL;
-        $source .= '  }' . PHP_EOL;
-        $source .= '  parent::__construct($wsdl, $options);' . PHP_EOL;
+	if ($strWsdl === \'\')
+	{
+		throw new \Exception(\'Missing WSDL!\');
+	}
+	foreach (self::$arrClassMap as $strKey => $mValue)
+	{
+		if (!isset($arrOptions[\'classmap\'][$strKey]))
+		{
+			$arrOptions[\'classmap\'][$strKey]	= $mValue;
+		}
+	}' . PHP_EOL;
+        $source .= '	parent::__construct($strWsdl, $arrOptions);' . PHP_EOL;
 
-        $function = new PhpFunction('public', '__construct', 'array $options = ' . $arrayPrefix.$arraySuffix . ', $wsdl = null', $source, $comment);
+        $function = new PhpFunction('public', '__construct', 'array $arrOptions = ' . $arrayPrefix.$arraySuffix . ', string $strWsdl = self::WsdlUrl', $source, $comment);
 
         // Add the constructor
         $this->class->addFunction($function);
 
         // Generate the classmap
-        $name = 'classmap';
+        $name = 'arrClassMap';
         $comment = new PhpDocComment();
         $comment->setVar(PhpDocElementFactory::getVar('array', $name, 'The defined classes'));
 
@@ -214,7 +254,7 @@ class Service implements ClassGenerator
                 $comment->addParam(PhpDocElementFactory::getParam($arr['type'], $arr['name'], $arr['desc']));
             }
 
-            $source = '  return $this->__soapCall(\'' . $operation->getName() . '\', ' . $arrayPrefix . $operation->getParamStringNoTypeHints() . $arraySuffix . ');' . PHP_EOL;
+            $source = "\t".'return $this->__soapCall(\'' . $operation->getName() . '\', ' . $arrayPrefix . $operation->getParamStringNoTypeHints() . $arraySuffix . ');' . PHP_EOL;
 
             $paramStr = $operation->getParamString($this->types);
 

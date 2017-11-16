@@ -112,7 +112,7 @@ class PhpClass extends PhpElement
         $this->constants = array();
         $this->variables = array();
         $this->functions = array();
-        $this->indentionStr = '    '; // Use 4 spaces as indention, as requested by PSR-2
+        $this->indentionStr = "\t"; // Use tab as indention
         $this->abstract = $abstract;
     }
 
