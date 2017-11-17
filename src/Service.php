@@ -143,16 +143,50 @@ class Service implements ClassGenerator
 	{
 		$strReturn	= $this->config->get('bracketedArrays')? str_replace(array('array (', ')'), array('[', ']'), $strContent): $strContent;
 		$strReturn	= preg_replace("/ {2}/m", "\t", $strReturn);
-		if($iExtraTabs === 0)
+
+		return $this->alignArrayItems($strReturn, $iExtraTabs);
+	}
+
+	/**
+	 * @param string $strString
+	 * @param int    $iExtraTabs
+	 *
+	 * @return string
+	 */
+	public function alignArrayItems(string $strString, int $iExtraTabs): string
+	{
+		$arrLines	= explode(PHP_EOL, $strString);
+		$strReturn	= '';
+
+		$iMaxIndexLength	= 0;
+		# first loop: find biggest word on left side
+		foreach($arrLines as $strLine)
 		{
-			return $strReturn;
+			if(strpos($strLine, '=>') !== false)
+			{
+				$arrTokens      = explode('=>', $strLine);
+				$iCurrentLength = strlen(trim($arrTokens[0]));
+				if($iCurrentLength > $iMaxIndexLength)
+				{
+					$iMaxIndexLength	= $iCurrentLength;
+				}
+			}
 		}
 
-		$arrLines	= explode(PHP_EOL, $strReturn);
-		$strReturn	= '';
+		# Calculate number of tabs to cover the longest index
+		$iMaxTabs	= (int)ceil($iMaxIndexLength/4) + ( $iMaxIndexLength % 4 === 0 ? 1 : 0);
+
 		foreach ($arrLines as $strLine)
 		{
-			$strReturn	.= str_repeat("\t", $iExtraTabs).$strLine . PHP_EOL;
+			if(strpos($strLine, '=>') !== false)
+			{
+				$arrTokens		= explode('=>', $strLine);
+				$iCurrentLength	= strlen(trim($arrTokens[0]));
+				$iTabsToAdd		= $iMaxTabs - (int)floor($iCurrentLength / 4);
+				$strLine		= rtrim($arrTokens[0]).str_repeat("\t", $iTabsToAdd).'=> '.trim($arrTokens[1]);
+			}
+
+			$strReturn	.= ($strReturn === '' ? $strLine : str_repeat("\t", $iExtraTabs) . $strLine) . PHP_EOL;
 		}
 
 		return trim($strReturn, PHP_EOL);
