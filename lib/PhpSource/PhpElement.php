@@ -13,6 +13,13 @@ namespace Wsdl2PhpGenerator\PhpSource;
  */
 abstract class PhpElement
 {
+	public const Access_Public				= 'public';
+	public const Access_Protected			= 'protected';
+	public const Access_Private				= 'private';
+	public const Access_PublicStatic		= 'public static';
+	public const Access_ProtectedStatic		= 'protected static';
+	public const Access_PrivateStatic		= 'private static';
+
     /**
      *
      * @var string The access of the function |public|private|protected
@@ -39,14 +46,14 @@ abstract class PhpElement
      * @access public
      * @return string
      */
-    abstract public function getSource();
+    abstract public function getSource(): string;
 
     /**
      *
      * @return string The access of the element
      */
-    public function getAccess()
-    {
+    public function getAccess(): string
+	{
         return $this->access;
     }
 
@@ -54,8 +61,8 @@ abstract class PhpElement
      *
      * @return string The identifier, name, of the element
      */
-    public function getIdentifier()
-    {
+    public function getIdentifier(): string
+	{
         return $this->identifier;
     }
 
@@ -63,8 +70,8 @@ abstract class PhpElement
      *
      * @return string Returns the indention string
      */
-    public function getIndentionStr()
-    {
+    public function getIndentionStr(): string
+	{
         return $this->indentionStr;
     }
 
@@ -72,8 +79,8 @@ abstract class PhpElement
      *
      * @param string $indentionStr Sets the indention string to use
      */
-    public function setIndentionStr($indentionStr)
-    {
+    public function setIndentionStr($indentionStr): void
+	{
         $this->indentionStr = $indentionStr;
     }
 
@@ -84,19 +91,19 @@ abstract class PhpElement
      * @param string $source
      * @return string
      */
-    public function getSourceRow($source)
-    {
+    public function getSourceRow($source): string
+	{
         if (strpos($source, PHP_EOL) === false) {
             return $this->indentionStr . $source . PHP_EOL;
         }
 
         $ret = '';
         $rows = explode(PHP_EOL, $source);
-        if (strlen(trim($rows[0])) == 0) {
+        if (trim($rows[0]) === '') {
             $rows = array_splice($rows, 1);
         }
-        if (strlen(trim($rows[(count($rows) - 1)])) == 0) {
-            $rows = array_splice($rows, 0, count($rows) - 1);
+        if (trim($rows[\count($rows) - 1]) === '') {
+            $rows = array_splice($rows, 0, \count($rows) - 1);
         }
         foreach ($rows as $row) {
             $ret .= $this->indentionStr . $row . PHP_EOL;

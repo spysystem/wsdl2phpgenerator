@@ -18,8 +18,8 @@ class StreamContextFactory
      */
     public function create(ConfigInterface $config)
     {
-        $options = array();
-        $headers = array();
+        $options = [];
+        $headers = [];
 
         $proxy = $config->get('proxy');
         if (is_array($proxy)) {

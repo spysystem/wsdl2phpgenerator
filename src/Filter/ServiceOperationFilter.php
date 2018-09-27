@@ -39,10 +39,10 @@ class ServiceOperationFilter implements FilterInterface
      */
     public function filter(Service $service)
     {
-        $operations = array();
-        $types  = array();
+        $operations = [];
+        $types  = [];
         foreach ($this->methods as $method) {
-            $methodTypes = array();
+            $methodTypes = [];
             $operation = $service->getOperation($method);
             if (!$operation) {
                 continue;
@@ -96,7 +96,7 @@ class ServiceOperationFilter implements FilterInterface
             return array($type);
         }
         if (!$type instanceof ComplexType) {
-            return array();
+            return [];
         }
 
         $foundTypes = array($type);

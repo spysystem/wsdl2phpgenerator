@@ -32,7 +32,7 @@ class Enum extends Type
     public function __construct(ConfigInterface $config, $name, $restriction)
     {
         parent::__construct($config, $name, $restriction);
-        $this->values = array();
+        $this->values = [];
     }
 
     /**
@@ -50,7 +50,7 @@ class Enum extends Type
 
         $first = true;
 
-        $names = array();
+        $names = [];
         foreach ($this->values as $value) {
             $name = Validator::validateConstant($value);
 

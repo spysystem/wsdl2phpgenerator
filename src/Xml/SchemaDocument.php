@@ -65,7 +65,7 @@ class SchemaDocument extends XmlNode
         // A reference in this context can either be
         // - an import from another namespace: http://www.w3.org/TR/xmlschema-1/#composition-schemaImport
         // - an include within the same namespace: http://www.w3.org/TR/xmlschema-1/#compound-schema
-        $this->referereces = array();
+        $this->referereces = [];
         foreach ($this->xpath(  '//wsdl:import/@location|' .
                                 '//s:import/@schemaLocation|' .
                                 '//s:include/@schemaLocation') as $reference) {

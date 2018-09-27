@@ -49,7 +49,7 @@ class ArrayTypeTest extends CodeGenerationTestCase
             'one'   => false,
             'two'   => 'good job',
             'three' => new \stdClass(),
-            'four'  => array(),
+            'four'  => [],
         );
         $this->class = new \ArrayTypeTestClass($this->items);
     }

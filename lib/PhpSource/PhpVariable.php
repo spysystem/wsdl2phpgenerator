@@ -50,7 +50,7 @@ class PhpVariable extends PhpElement
      * @return string Returns the complete source code for the variable
      * @access public
      */
-    public function getSource()
+    public function getSource(): string
     {
         $ret = '';
 

@@ -130,7 +130,7 @@ class OutputManager
         // 2. A check to see if the autoloader contains the argument and if so include it.
         //
         // First we generate a string containing the known classes and the paths they map to. One line for each string.
-        $autoloadedClasses = array();
+        $autoloadedClasses = [];
         foreach ($classes as $class) {
             $className = $this->config->get('namespaceName') . '\\' . $class->getIdentifier();
             $className = ltrim($className, '\\');

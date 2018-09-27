@@ -22,7 +22,7 @@ class PhpFunction extends PhpElement
 
     /**
      *
-     * @var The code inside {}
+     * @var string The code inside {}
      * @access private
      */
     private $source;
@@ -34,21 +34,29 @@ class PhpFunction extends PhpElement
      */
     private $comment;
 
-    /**
-     *
-     * @param string $access
-     * @param string $identifier
-     * @param string $params
-     * @param string $source
-     * @param PhpDocComment $comment
-     */
-    public function __construct($access, $identifier, $params, $source, PhpDocComment $comment = null)
+	/**
+	 *
+	 * @var string PHP 7.1 Return type
+	 */
+    private $return;
+
+	/**
+	 *
+	 * @param string        $access
+	 * @param string        $identifier
+	 * @param string        $params
+	 * @param string        $source
+	 * @param PhpDocComment $comment
+	 * @param string        $strReturn
+	 */
+    public function __construct($access, $identifier, $params, $source, PhpDocComment $comment = null, string $strReturn = '')
     {
         $this->access = $access;
         $this->identifier = $identifier;
         $this->params = $params;
         $this->source = $source;
         $this->comment = $comment;
+        $this->return = $strReturn;
     }
 
     /**
@@ -56,7 +64,7 @@ class PhpFunction extends PhpElement
      * @return string Returns the complete source code for the function
      * @access public
      */
-    public function getSource()
+    public function getSource(): string
     {
         $ret = '' . PHP_EOL;
 
@@ -64,7 +72,13 @@ class PhpFunction extends PhpElement
             $ret .= $this->getSourceRow($this->comment->getSource());
         }
 
-        $ret .= $this->getSourceRow($this->access . ' function ' . $this->identifier . '(' . $this->params . ')');
+        $strReturn = '';
+		if($this->return !== '')
+		{
+			$strReturn = ': '.$this->return;
+		}
+
+        $ret .= $this->getSourceRow($this->access . ' function ' . $this->identifier . '(' . $this->params . ')'.$strReturn);
         $ret .= $this->getSourceRow('{');
         $ret .= $this->getSourceRow($this->source);
         $ret .= $this->getSourceRow('}');

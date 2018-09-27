@@ -73,9 +73,9 @@ class Config implements ConfigInterface
             'sharedTypes'                    => false,
             'constructorParamsDefaultToNull' => false,
             'soapClientClass'               => '\SoapClient',
-            'soapClientOptions'             => array(),
+            'soapClientOptions'             => [],
             'proxy'                         => false,
-            'bracketedArrays'               => false
+            'bracketedArrays'               => true
         ));
 
         // A set of configuration options names and normalizer callables.
@@ -115,7 +115,7 @@ class Config implements ConfigInterface
     protected function normalizeArray(Options $options, $value)
     {
         if (strlen($value) === 0) {
-            return array();
+            return [];
         }
 
         return array_map('trim', explode(',', $value));

@@ -35,7 +35,7 @@ class Generator implements GeneratorInterface
      *
      * @var Type[]
      */
-    protected $types = array();
+    protected $types = [];
 
     /**
      * This is the object that holds the current config
@@ -55,14 +55,16 @@ class Generator implements GeneratorInterface
     public function __construct()
     {
         $this->service = null;
-        $this->types = array();
+        $this->types = [];
     }
 
-    /**
-     * Generates php source code from a wsdl file
-     *
-     * @param ConfigInterface $config The config to use for generation
-     */
+	/**
+	 * Generates php source code from a wsdl file
+	 *
+	 * @param ConfigInterface $config The config to use for generation
+	 *
+	 * @throws Exception
+	 */
     public function generate(ConfigInterface $config)
     {
         $this->config = $config;
@@ -94,16 +96,18 @@ class Generator implements GeneratorInterface
         $this->log('Generation complete', 'info');
     }
 
-    /**
-     * Load the wsdl file into php
-     */
+	/**
+	 * Load the wsdl file into php
+	 *
+	 * @throws Exception
+	 */
     protected function load($wsdl)
     {
         $this->log('Loading the WSDL');
 
         $this->wsdl = new WsdlDocument($this->config, $wsdl);
 
-        $this->types = array();
+        $this->types = [];
 
         $this->loadTypes();
         $this->loadService();
@@ -208,17 +212,17 @@ class Generator implements GeneratorInterface
         $filteredService = $filter->filter($this->service);
         $service = $filteredService->getClass();
         $filteredTypes = $filteredService->getTypes();
-        if ($service == null) {
+        if ($service === null) {
             throw new Exception('No service loaded');
         }
 
         $output = new OutputManager($this->config);
 
         // Generate all type classes
-        $types = array();
+        $types = [];
         foreach ($filteredTypes as $type) {
             $class = $type->getClass();
-            if ($class != null) {
+            if ($class !== null) {
                 $types[] = $class;
             }
         }

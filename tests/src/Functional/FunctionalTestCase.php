@@ -35,7 +35,7 @@ abstract class FunctionalTestCase extends CodeGenerationTestCase
      * Storage of already generated classes from WSDL to avoid double declaring and fatals
      * @var array
      */
-    private static $generatedTestCases = array();
+    private static $generatedTestCases = [];
 
     /**
      * @return string The path to the WSDL to generate code from.

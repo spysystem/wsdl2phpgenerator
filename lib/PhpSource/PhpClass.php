@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection ThrowRawExceptionInspection */
+
 /**
  * @package phpSource
  */
@@ -17,7 +18,7 @@ class PhpClass extends PhpElement
 {
     /**
      *
-     * @var array An array of strings, contains all the filenames to include for the class
+     * @var array An array of strings, contains all the file names to include for the class
      * @access private
      */
     private $dependencies;
@@ -84,6 +85,13 @@ class PhpClass extends PhpElement
      */
     private $comment;
 
+	/**
+	 *
+	 * @var string[] Array of strings containing "use" clauses
+	 * @access private
+	 */
+    private $uses;
+
     /**
      *
      * @var bool If the class is abstract.
@@ -102,25 +110,27 @@ class PhpClass extends PhpElement
      */
     public function __construct($identifier, $classExists = false, $extends = '', PhpDocComment $comment = null, $final = false, $abstract = false)
     {
-        $this->dependencies = array();
+        $this->dependencies = [];
         $this->classExists = $classExists;
         $this->comment = $comment;
         $this->final = $final;
         $this->identifier = $identifier;
         $this->access = '';
         $this->extends = $extends;
-        $this->constants = array();
-        $this->variables = array();
-        $this->functions = array();
+        $this->implements = [];
+        $this->constants = [];
+        $this->variables = [];
+        $this->functions = [];
         $this->indentionStr = "\t"; // Use tab as indention
         $this->abstract = $abstract;
+        $this->uses = [];
     }
 
     /**
      *
      * @return string Returns the compete source code for the class
      */
-    public function getSource()
+    public function getSource(): string
     {
         $ret = '';
 
@@ -128,12 +138,21 @@ class PhpClass extends PhpElement
             $ret .= 'if (!class_exists("' . $this->identifier . '", false)) ' . PHP_EOL . '{' . PHP_EOL;
         }
 
-        if (count($this->dependencies) > 0) {
+        if (\count($this->dependencies) > 0) {
             foreach ($this->dependencies as $file) {
                 $ret .= 'include_once(\'' . $file . '\');' . PHP_EOL;
             }
             $ret .= PHP_EOL;
         }
+
+		if(\count($this->uses) > 0)
+		{
+			sort($this->uses);
+			foreach($this->uses as $strUseClause)
+			{
+				$ret .= 'use '.$strUseClause.';'.PHP_EOL;
+			}
+		}
 
         if ($this->comment !== null) {
             $ret .= $this->comment->getSource();
@@ -149,35 +168,35 @@ class PhpClass extends PhpElement
 
         $ret .= 'class ' . $this->identifier;
 
-        if (strlen($this->extends) > 0) {
+        if (!empty($this->extends)) {
             $ret .= ' extends ' . $this->extends;
         }
 
-        if (count($this->implements) > 0) {
+        if (\count($this->implements) > 0) {
             $ret .= ' implements ' . implode(', ', $this->implements);
         }
 
         $ret .= PHP_EOL . '{' . PHP_EOL;
 
-        if (isset($this->default)) {
+        if ($this->default !== null) {
             $ret .= $this->getIndentionStr() . 'const __default = ' . $this->default . ';' . PHP_EOL;
         }
 
-        if (count($this->constants) > 0) {
-            foreach ($this->constants as $name => $value) {
-                $ret .= $this->getIndentionStr() . 'const ' . $name . ' = \'' . $value . '\';' . PHP_EOL;
+        if (\count($this->constants) > 0) {
+            foreach ($this->constants as $name => [$access, $value]) {
+                $ret .= $this->getIndentionStr() . $access .' const ' . $name . ' = \'' . $value . '\';' . PHP_EOL;
             }
             $ret .= PHP_EOL;
         }
 
-        if (count($this->variables) > 0) {
+        if (\count($this->variables) > 0) {
             foreach ($this->variables as $variable) {
                 $variable->setIndentionStr($this->getIndentionStr());
                 $ret .= $variable->getSource();
             }
         }
 
-        if (count($this->functions) > 0) {
+        if (\count($this->functions) > 0) {
             foreach ($this->functions as $function) {
                 $function->setIndentionStr($this->getIndentionStr());
                 $ret .= $function->getSource();
@@ -199,20 +218,33 @@ class PhpClass extends PhpElement
      *
      * @param string $filename
      */
-    public function addDependency($filename)
-    {
-        if (in_array($filename, $this->dependencies) == false) {
+    public function addDependency($filename): void
+	{
+        if (!\in_array($filename, $this->dependencies, true)) {
             $this->dependencies[] = $filename;
         }
     }
 
+	/**
+	 * Adds a use clause to the top of the file.
+	 *
+	 * @param $strUse
+	 */
+	public function addUseClause($strUse): void
+	{
+		if(!\in_array($strUse, $this->uses, true))
+		{
+			$this->uses[]	= $strUse;
+		}
+	}
+
     /**
      * @param string|\string[] $classes  $filename
      */
-    public function addImplementation($classes)
-    {
+    public function addImplementation($classes): void
+	{
         $classes = (array)$classes;
-        $this->implements = array_merge((array)$this->implements, $classes);
+        $this->implements = array_merge($this->implements, $classes);
     }
 
     /**
@@ -220,27 +252,29 @@ class PhpClass extends PhpElement
      *
      * @param $const
      */
-    public function setDefault($const)
-    {
+    public function setDefault($const): void
+	{
         $this->default = $const;
     }
 
-    /**
-     * Adds a constant to the class. If no name is supplied and the value is a string the value is used as name otherwise exception is raised
-     *
-     * @param mixed $value
-     * @param string $name
-     * @throws Exception
-     */
-    public function addConstant($value, $name = '')
-    {
-        if (strlen($value) == 0) {
+	/**
+	 * Adds a constant to the class. If no name is supplied and the value is a string the value is used as name otherwise exception is raised
+	 *
+	 * @param mixed  $value
+	 * @param string $name
+	 * @param string $strAccess
+	 *
+	 * @throws Exception
+	 */
+    public function addConstant($value = null, $name = '', string $strAccess = PhpElement::Access_Public): void
+	{
+        if ($value === null) {
             throw new Exception('No value supplied');
         }
 
         // If no name is supplied use the value as name
-        if (strlen($name) == 0) {
-            if (is_string($value)) {
+        if ($name === '') {
+            if (\is_string($value)) {
                 $name = $value;
             } else {
                 throw new Exception('No name supplied');
@@ -251,7 +285,7 @@ class PhpClass extends PhpElement
             throw new Exception('A constant of the name (' . $name . ') does already exist.');
         }
 
-        $this->constants[$name] = $value;
+        $this->constants[$name] = [$strAccess, $value];
     }
 
     /**
@@ -262,8 +296,8 @@ class PhpClass extends PhpElement
      * @access public
      * @throws Exception If the variable name already exists
      */
-    public function addVariable(PhpVariable $variable)
-    {
+    public function addVariable(PhpVariable $variable): void
+	{
         if ($this->variableExists($variable->getIdentifier())) {
             throw new Exception('A variable of the name (' . $variable->getIdentifier() . ') does already exist.');
         }
@@ -279,8 +313,8 @@ class PhpClass extends PhpElement
      * @access public
      * @throws Exception If the function name already exists
      */
-    public function addFunction(PhpFunction $function)
-    {
+    public function addFunction(PhpFunction $function): void
+	{
         if ($this->functionExists($function->getIdentifier())) {
             throw new Exception('A function of the name (' . $function->getIdentifier() . ') does already exist.');
         }
@@ -295,8 +329,8 @@ class PhpClass extends PhpElement
      * @param string $identifier
      * @return bool
      */
-    public function variableExists($identifier)
-    {
+    public function variableExists($identifier): bool
+	{
         return array_key_exists($identifier, $this->variables);
     }
 
@@ -307,8 +341,8 @@ class PhpClass extends PhpElement
      * @param string $identifier
      * @return bool
      */
-    public function functionExists($identifier)
-    {
+    public function functionExists($identifier): bool
+	{
         return array_key_exists($identifier, $this->functions);
     }
 }

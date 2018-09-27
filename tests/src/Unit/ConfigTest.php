@@ -95,7 +95,7 @@ class ConfigTest extends PHPUnit_Framework_TestCase
     private function assertNormalizerForParameter($parameterName)
     {
         $toTest = array(
-            ''                   => array(),
+            ''                   => [],
             'test1'              => array('test1'),
             'test1,test2'        => array('test1', 'test2'),
             'test1,test2, test3' => array('test1', 'test2', 'test3')

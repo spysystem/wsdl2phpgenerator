@@ -44,7 +44,7 @@ class Operation
     public function __construct($name, $paramStr, $description, $returns)
     {
         $this->name = $name;
-        $this->params = array();
+        $this->params = [];
         $this->description = $description;
         $this->returns = $returns;
 
@@ -81,7 +81,7 @@ class Operation
      */
     public function getParamString(array $validTypes)
     {
-        $params = array();
+        $params = [];
 
         foreach ($this->params as $value => $typeHint) {
             $ret = '';
@@ -118,7 +118,7 @@ class Operation
      */
     public function getPhpDocParams($name, array $validTypes)
     {
-        $ret = array();
+        $ret = [];
 
         $ret['desc'] = '';
 
@@ -174,7 +174,7 @@ class Operation
      */
     private function generateParams($paramStr)
     {
-        $this->params = array();
+        $this->params = [];
 
         foreach (explode(', ', $paramStr) as $param) {
             $arr = explode(' ', $param);

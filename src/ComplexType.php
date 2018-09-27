@@ -49,7 +49,7 @@ class ComplexType extends Type
     public function __construct(ConfigInterface $config, $name)
     {
         parent::__construct($config, $name, null);
-        $this->members = array();
+        $this->members = [];
         $this->baseType = null;
         $this->abstract = false;
     }
@@ -78,8 +78,8 @@ class ComplexType extends Type
 
         $constructorComment = new PhpDocComment();
         $constructorSource = '';
-        $constructorParameters = array();
-        $accessors = array();
+        $constructorParameters = [];
+        $accessors = [];
 
         // Add base type members to constructor parameter list first and call base class constructor
         $parentMembers = $this->getBaseTypeMembers($this);
@@ -292,7 +292,7 @@ class ComplexType extends Type
      */
     protected function buildParametersString(array $parameters, $includeType = true, $defaultNull = false)
     {
-        $parameterStrings = array();
+        $parameterStrings = [];
         foreach ($parameters as $name => $type) {
             $parameterString = '$' . $name;
             if (!empty($type) && $includeType) {
@@ -316,13 +316,13 @@ class ComplexType extends Type
     protected function getBaseTypeMembers(ComplexType $type)
     {
         if (empty($type->baseType)) {
-            return array();
+            return [];
         }
 
         // Only get members from the base type if it differs from the current class. It is possible that they will be
         // the same due to poor handling of namespaces in PHP SoapClients.
         if ($type === $type->baseType) {
-            return array();
+            return [];
         }
 
         return array_merge($this->getBaseTypeMembers($type->baseType), $type->baseType->getMembers());

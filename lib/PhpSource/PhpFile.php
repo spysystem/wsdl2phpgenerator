@@ -52,9 +52,9 @@ class PhpFile
     public function __construct($name)
     {
         $this->name = $name;
-        $this->namespaces = array();
-        $this->classes = array();
-        $this->functions = array();
+        $this->namespaces = [];
+        $this->classes = [];
+        $this->functions = [];
     }
 
     /**
@@ -64,7 +64,7 @@ class PhpFile
      */
     public function getSource()
     {
-        $ret = '<?php' . PHP_EOL . PHP_EOL;
+        $ret = '<?php' . PHP_EOL;
 
         if (count($this->namespaces) > 0) {
             $ret .= 'namespace ' . $this->namespaces[0] . ';' . PHP_EOL . PHP_EOL;

@@ -62,19 +62,20 @@ class Service implements ClassGenerator
         $this->config = $config;
         $this->identifier = $identifier;
         $this->description = $description;
-        $this->operations = array();
-        $this->types = array();
+        $this->operations = [];
+        $this->types = [];
         foreach ($types as $type) {
             $this->types[$type->getIdentifier()] = $type;
         }
     }
 
-    /**
-     * @return PhpClass Returns the class, generates it if not done
-     */
-    public function getClass()
+	/**
+	 * @return PhpClass Returns the class, generates it if not done
+	 * @throws \Exception
+	 */
+    public function getClass(): PhpClass
     {
-        if ($this->class == null) {
+        if ($this->class === null) {
             $this->generateClass();
         }
 
@@ -88,9 +89,9 @@ class Service implements ClassGenerator
      *
      * @return Operation|null The operation or null if it does not exist.
      */
-    public function getOperation($operationName)
-    {
-        return isset($this->operations[$operationName])? $this->operations[$operationName]: null;
+    public function getOperation($operationName): ?Operation
+	{
+        return $this->operations[$operationName] ?? null;
     }
 
     /**
@@ -98,8 +99,8 @@ class Service implements ClassGenerator
      *
      * @return string The service description.
      */
-    public function getDescription()
-    {
+    public function getDescription(): string
+	{
         return $this->description;
     }
 
@@ -108,8 +109,8 @@ class Service implements ClassGenerator
      *
      * @return string The service name.
      */
-    public function getIdentifier()
-    {
+    public function getIdentifier(): string
+	{
         return $this->identifier;
     }
 
@@ -120,17 +121,17 @@ class Service implements ClassGenerator
      *
      * @return Type|null The type or null if the type does not exist.
      */
-    public function getType($identifier)
-    {
-        return isset($this->types[$identifier])? $this->types[$identifier]: null;
+    public function getType($identifier): ?Type
+	{
+        return $this->types[$identifier] ?? null;
     }
     /**
      * Returns all types defined by the service.
      *
      * @return Type[] An array of types.
      */
-    public function getTypes()
-    {
+    public function getTypes(): array
+	{
         return $this->types;
     }
 
@@ -142,7 +143,7 @@ class Service implements ClassGenerator
 	protected function adjustArrayNotation(string $strContent, int $iExtraTabs = 0)
 	{
 		$strReturn	= $this->config->get('bracketedArrays')? str_replace(array('array (', ')'), array('[', ']'), $strContent): $strContent;
-		$strReturn	= preg_replace("/ {2}/m", "\t", $strReturn);
+		$strReturn	= preg_replace('/ {2}/m', "\t", $strReturn);
 
 		return $this->alignArrayItems($strReturn, $iExtraTabs);
 	}
@@ -165,7 +166,7 @@ class Service implements ClassGenerator
 			if(strpos($strLine, '=>') !== false)
 			{
 				$arrTokens      = explode('=>', $strLine);
-				$iCurrentLength = strlen(trim($arrTokens[0]));
+				$iCurrentLength = \strlen(trim($arrTokens[0]));
 				if($iCurrentLength > $iMaxIndexLength)
 				{
 					$iMaxIndexLength	= $iCurrentLength;
@@ -181,7 +182,7 @@ class Service implements ClassGenerator
 			if(strpos($strLine, '=>') !== false)
 			{
 				$arrTokens		= explode('=>', $strLine);
-				$iCurrentLength	= strlen(trim($arrTokens[0]));
+				$iCurrentLength	= \strlen(trim($arrTokens[0]));
 				$iTabsToAdd		= $iMaxTabs - (int)floor($iCurrentLength / 4);
 				$strLine		= rtrim($arrTokens[0]).str_repeat("\t", $iTabsToAdd).'=> '.trim($arrTokens[1]);
 			}
@@ -192,46 +193,65 @@ class Service implements ClassGenerator
 		return trim($strReturn, PHP_EOL);
 	}
 
-    /**
-     * Generates the class if not already generated
-     */
-    public function generateClass()
+	/**
+	 * Generates the class if not already generated
+	 *
+	 * @throws \Exception
+	 */
+    public function generateClass(): void
     {
         $arrayPrefix = $this->config->get('bracketedArrays')? '[': 'array(';
         $arraySuffix = $this->config->get('bracketedArrays')? ']': ')';
 
         $name = $this->identifier;
 
-        // Generate a valid classname
+        // Generate a valid class name
         $name = Validator::validateClass($name, $this->config->get('namespaceName'));
 
         // uppercase the name
         $name = ucfirst($name);
 
-        // Create the class object
-        $strClassComment = new PhpDocComment($this->description);
-        if(empty($strClassComment)) # cannot be ===, since $this->description can be null...
-		{
-			$strClassComment	= <<< EOT
-/**
- * Class $name
- *
- * @package {$this->config->get('namespaceName')}
-EOT;
-			// Needed because PHPStorm thinks the previous string is a REGEX, due to two /'s on the same block... :/
-			$strClassComment	.= " */\n";
-		}
-        $this->class = new PhpClass($name, false, $this->config->get('soapClientClass'), $strClassComment);
+		$strDescription = "Class $name \n".$this->description;
+		// Create the class object
+		$oClassComment = new PhpDocComment($strDescription);
+		$oClassComment->setPackage(PhpDocElementFactory::getPackage($this->config->get('namespaceName')));
+		$strSoapClientClass	= $this->config->get('soapClientClass');
+		$this->class = new PhpClass($name, false, substr(strrchr($strSoapClientClass, "\\"), 1), $oClassComment);
 
-        $this->class->addConstant($this->config->get('inputFile'), 'WsdlUrl');
-
+		$this->class->addConstant($this->config->get('inputFile'), 'WsdlUrl');
+		$this->class->addUseClause(trim($strSoapClientClass, '\\'));
+		$this->class->addUseClause('Exception');
 
         $oCreateComment	= new PhpDocComment();
         $oCreateComment->setReturn(PhpDocElementFactory::getReturn($name, ''));
 
-        $strCreateSource	= '	return new static(' . $this->adjustArrayNotation(var_export($this->config->get('soapClientOptions'), true), 1) . ');' . PHP_EOL;
+        $arrParameters			= [];
+        $arrSoapClientOptions	= $this->config->get('soapClientOptions');
 
-        $oCreateFunction	= new PhpFunction('public', 'Create', '', $strCreateSource, $oCreateComment);
+		if(isset($arrSoapClientOptions['login']))
+		{
+			$arrSoapClientOptions['login']	= 'USERNAME-PLACEHOLDER';
+			$arrParameters[]				= 'string $strUsername';
+			$oCreateComment->addParam(PhpDocElementFactory::getParam('string', 'strUsername', 'Username for Basic Authentication'));
+		}
+
+		if(isset($arrSoapClientOptions['password']))
+		{
+			$arrSoapClientOptions['password']	= 'PASSWORD-PLACEHOLDER';
+			$arrParameters[]					= 'string $strPassword';
+			$oCreateComment->addParam(PhpDocElementFactory::getParam('string', 'strPassword', 'Password for Basic Authentication'));
+		}
+
+		$arrParameters[]	= 'string $strURL = self::WsdlUrl';
+		$oCreateComment->addParam(PhpDocElementFactory::getParam('string', 'strURL', 'URL or path for WSDL file'));
+		$oCreateComment->addThrows(PhpDocElementFactory::getThrows('Exception', ''));
+
+        $strCreateSource	= '	return new static(' . $this->adjustArrayNotation(var_export($arrSoapClientOptions, true), 1) . ', $strURL);' . PHP_EOL;
+
+        $strCreateSource	= str_replace(["'USERNAME-PLACEHOLDER'", "'PASSWORD-PLACEHOLDER'"], ['$strUsername', '$strPassword'], $strCreateSource);
+
+        $oCreateFunction	= new PhpFunction('public static', 'Create', implode(', ', $arrParameters), $strCreateSource, $oCreateComment, $name);
+
 
         $this->class->addFunction($oCreateFunction);
 
@@ -239,12 +259,12 @@ EOT;
         $comment = new PhpDocComment();
         $comment->addParam(PhpDocElementFactory::getParam('string', 'strWsdl', 'The wsdl file to use'));
         $comment->addParam(PhpDocElementFactory::getParam('array', 'arrOptions', 'A array of config values'));
-        $comment->addThrows(PhpDocElementFactory::getThrows('\Exception', ''));
+        $comment->addThrows(PhpDocElementFactory::getThrows('Exception', ''));
 
         $source = '
 	if ($strWsdl === \'\')
 	{
-		throw new \Exception(\'Missing WSDL!\');
+		throw new Exception(\'Missing WSDL!\');
 	}
 	foreach (self::$arrClassMap as $strKey => $mValue)
 	{
@@ -265,13 +285,18 @@ EOT;
         $comment = new PhpDocComment();
         $comment->setVar(PhpDocElementFactory::getVar('array', $name, 'The defined classes'));
 
-        $init = array();
+        $init = [];
         foreach ($this->types as $type) {
             if ($type instanceof ComplexType) {
-                $init[$type->getIdentifier()] = $this->config->get('namespaceName') . "\\" . $type->getPhpIdentifier();
+                $init[$type->getIdentifier()] = $type->getPhpIdentifier().'::class';
             }
         }
-        $var = new PhpVariable('private static', $name, $this->adjustArrayNotation(var_export($init, true)), $comment);
+
+        $strClassMap = $this->adjustArrayNotation(var_export($init, true));
+
+        $strClassMap	= preg_replace("/=> '(.*)'/m", '=> $1', $strClassMap);
+
+        $var = new PhpVariable('private static', $name, $strClassMap, $comment);
 
         // Add the classmap variable
         $this->class->addVariable($var);
@@ -292,9 +317,16 @@ EOT;
 
             $paramStr = $operation->getParamString($this->types);
 
-            $function = new PhpFunction('public', $name, $paramStr, $source, $comment);
+            $strReturnType	= '';
 
-            if ($this->class->functionExists($function->getIdentifier()) == false) {
+            if(array_key_exists($operation->getReturns(), $init))
+			{
+				$strReturnType = $operation->getReturns();
+			}
+
+            $function = new PhpFunction('public', $name, $paramStr, $source, $comment, $strReturnType);
+
+            if (!$this->class->functionExists($function->getIdentifier())) {
                 $this->class->addFunction($function);
             }
         }
@@ -305,8 +337,8 @@ EOT;
      *
      * @param Operation $operation The operation to be added.
      */
-    public function addOperation(Operation $operation)
-    {
+    public function addOperation(Operation $operation): void
+	{
         $this->operations[$operation->getName()] = $operation;
     }
 }

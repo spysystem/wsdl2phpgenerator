@@ -150,7 +150,7 @@ class ArrayType extends ComplexType
             'public',
             'current',
             $this->buildParametersString(
-                array(),
+                [],
                 false,
                 false
             ),
@@ -166,7 +166,7 @@ class ArrayType extends ComplexType
             'public',
             'next',
             $this->buildParametersString(
-                array(),
+                [],
                 false,
                 false
             ),
@@ -182,7 +182,7 @@ class ArrayType extends ComplexType
             'public',
             'key',
             $this->buildParametersString(
-                array(),
+                [],
                 false,
                 false
             ),
@@ -198,7 +198,7 @@ class ArrayType extends ComplexType
             'public',
             'valid',
             $this->buildParametersString(
-                array(),
+                [],
                 false,
                 false
             ),
@@ -214,7 +214,7 @@ class ArrayType extends ComplexType
             'public',
             'rewind',
             $this->buildParametersString(
-                array(),
+                [],
                 false,
                 false
             ),
@@ -236,7 +236,7 @@ class ArrayType extends ComplexType
             'public',
             'count',
             $this->buildParametersString(
-                array(),
+                [],
                 false,
                 false
             ),

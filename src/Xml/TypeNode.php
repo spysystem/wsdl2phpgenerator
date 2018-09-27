@@ -132,7 +132,7 @@ class TypeNode extends XmlNode
     {
         $wsdlLines = $this->getWsdlLines();
 
-        $parts = array();
+        $parts = [];
 
         // If array is defied as inherited from array type it have only one line and looks like "Type ArrayOfType[]"
         if (sizeof($wsdlLines) == 1 && substr($wsdlLines[0], -2, 2) == '[]') {
@@ -182,7 +182,7 @@ class TypeNode extends XmlNode
      */
     public function getEnumerations()
     {
-        $enums = array();
+        $enums = [];
         foreach ($this->element->getElementsByTagName('enumeration') as $enum) {
             $enums[] = $enum->getAttribute('value');
         };

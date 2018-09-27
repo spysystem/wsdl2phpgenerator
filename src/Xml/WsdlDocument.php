@@ -56,7 +56,7 @@ class WsdlDocument extends SchemaDocument
      */
     public function getTypes()
     {
-        $types = array();
+        $types = [];
 
         $typeStrings = $this->soapClient->__getTypes();
         foreach ($typeStrings as $typeString) {
@@ -93,7 +93,7 @@ class WsdlDocument extends SchemaDocument
      */
     public function getOperations()
     {
-        $functions = array();
+        $functions = [];
         foreach ($this->soapClient->__getFunctions() as $functionString) {
             $function = new OperationNode($functionString);
             $functionNodes = $this->xpath('//wsdl:operation[@name=%s]', $function->getName());

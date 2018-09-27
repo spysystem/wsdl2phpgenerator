@@ -44,7 +44,7 @@ class ServiceTest extends CodeGenerationTestCase
                 'soapClientOptions' => $this->soapclientOptions,
             ));
 
-        $service = new Service($config, 'TestService', array(), 'Service description');
+        $service = new Service($config, 'TestService', [], 'Service description');
         $this->generateClass($service, $this->namespace);
 
         $this->assertClassExists('TestService', $this->namespace);

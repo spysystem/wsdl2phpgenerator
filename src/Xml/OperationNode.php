@@ -44,7 +44,7 @@ class OperationNode extends DocumentedNode
     public function __construct($wsdlFunction)
     {
         $this->wsdlFunction = $wsdlFunction;
-        $matches = array();
+        $matches = [];
         if (preg_match(
             // Look for definitions in the format:
             // return_type method_name(param_type1 param1, param_type2 param2)

@@ -70,20 +70,16 @@ class PhpDocComment
      */
     private $description;
 
-    /**
-     * Constructs the object, sets all variables to empty
-     */
+	/**
+	 * Constructs the object, sets all variables to empty
+	 *
+	 * @param string $description
+	 */
     public function __construct($description = '')
     {
         $this->description = $description;
-        $this->access = null;
-        $this->var = null;
-        $this->params = array();
-        $this->throws = array();
-        $this->return = null;
-        $this->author = null;
-        $this->licence = null;
-        $this->package = null;
+        $this->params = [];
+        $this->throws = [];
     }
 
     /**

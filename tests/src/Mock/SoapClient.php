@@ -25,7 +25,7 @@ class SoapClient extends \SoapClient
      */
     public $options;
 
-    public function __construct($wsdl, $options = array())
+    public function __construct($wsdl, $options = [])
     {
         $this->wsdl = $wsdl;
         $this->options = $options;

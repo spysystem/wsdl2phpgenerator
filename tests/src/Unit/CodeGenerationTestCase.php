@@ -199,7 +199,7 @@ class CodeGenerationTestCase extends PHPUnit_Framework_TestCase
         $class = (!$class instanceof ReflectionClass) ? new ReflectionClass($class) : $class;
         $property = ($property instanceof ReflectionProperty) ? $property->getName() : $property;
 
-        $classPropertyNames = array();
+        $classPropertyNames = [];
         foreach ($class->getProperties() as $classProperty) {
             $classPropertyNames[] = $classProperty->getName();
         }
@@ -228,7 +228,7 @@ class CodeGenerationTestCase extends PHPUnit_Framework_TestCase
         $method = ($method instanceof ReflectionMethod) ? $method->getName() : $method;
 
         $class = (!$class instanceof ReflectionClass) ? new ReflectionClass($class) : $class;
-        $classMethodNames = array();
+        $classMethodNames = [];
         foreach ($class->getMethods() as $classMethod) {
             $classMethodNames[] = $classMethod->getName();
         }
@@ -254,7 +254,7 @@ class CodeGenerationTestCase extends PHPUnit_Framework_TestCase
         $class = (!$class instanceof ReflectionClass) ? new ReflectionClass($class) : $class;
         $method = ($method instanceof ReflectionMethod) ? $method->getName() : $method;
 
-        $classMethodNames = array();
+        $classMethodNames = [];
         foreach ($class->getMethods() as $classMethod) {
             $classMethodNames[] = $classMethod->getName();
         }
@@ -278,7 +278,7 @@ class CodeGenerationTestCase extends PHPUnit_Framework_TestCase
     {
         $parameterName = ($parameter instanceof ReflectionParameter) ? $parameter->getName() : $parameter;
 
-        $parameters = array();
+        $parameters = [];
         foreach ($method->getParameters() as $methodParameter) {
             $parameters[$methodParameter->getName()] = $methodParameter;
         }
