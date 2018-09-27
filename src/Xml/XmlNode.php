@@ -62,14 +62,14 @@ abstract class XmlNode
      */
     public function setElement($document, $element = null)
     {
-        if (empty($document)) {
+        if ($document === null) {
             // Make sure we always have an element to query against which should not return any returns.
             $document = new DOMDocument();
             $document->loadXML('<dummy/>');
         }
         $this->document = $document;
 
-        if (empty($element)) {
+        if ($element === null) {
             $element = $this->document->documentElement;
         }
         $this->element = $element;
@@ -95,7 +95,7 @@ abstract class XmlNode
 
         // Arguments containing ' and " needs escaping.
         // Inspired by https://gist.github.com/jaywilliams/2883026/#comment-813400.
-        $args = func_get_args();
+        $args = \func_get_args();
         array_shift($args);
         foreach ($args as &$arg) {
             if (strpos($arg, "'") === false) {
@@ -108,9 +108,9 @@ abstract class XmlNode
         }
 
         // Generate XPath query with esacped arguments.
-        $query = call_user_func_array('sprintf', array_merge(array($query), $args));
+        $query = sprintf(...array_merge([$query], $args));
 
-        return $xpath->query($query, $this->element);
+		return $xpath->query($query, $this->element);
     }
 
     /**

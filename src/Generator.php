@@ -75,7 +75,7 @@ class Generator implements GeneratorInterface
         // Note that this can be
         $options = $this->config->get('soapClientOptions');
         if (empty($options['features']) ||
-            (($options['features'] & SOAP_SINGLE_ELEMENT_ARRAYS) != SOAP_SINGLE_ELEMENT_ARRAYS)) {
+            (($options['features'] & SOAP_SINGLE_ELEMENT_ARRAYS) !== SOAP_SINGLE_ELEMENT_ARRAYS)) {
             $message = array('SoapClient option feature SOAP_SINGLE_ELEMENT_ARRAYS is not set.',
                              'This is not recommended as data types in DocBlocks for array properties will not be ',
                              'valid if the array only contains a single value.');
@@ -83,7 +83,7 @@ class Generator implements GeneratorInterface
         }
 
         $wsdl = $this->config->get('inputFile');
-        if (is_array($wsdl)) {
+        if (\is_array($wsdl)) {
             foreach ($wsdl as $ws) {
                 $this->load($ws);
             }

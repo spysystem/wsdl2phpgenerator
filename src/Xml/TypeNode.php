@@ -3,6 +3,8 @@
 
 namespace Wsdl2PhpGenerator\Xml;
 
+use DOMElement;
+
 /**
  * An XML node which represents a specific type of element used when interacting with a SOAP service.
  */
@@ -42,7 +44,7 @@ class TypeNode extends XmlNode
         $firstLineElements = explode(" ", $lines[0]);
         $this->restriction = $firstLineElements[0];
         $this->name = $firstLineElements[1];
-        if (substr($this->name, -2, 2) == '[]') {
+        if (substr($this->name, -2, 2) === '[]') {
             $this->name = substr($this->name, 0, -2);
         }
 
@@ -57,8 +59,9 @@ class TypeNode extends XmlNode
      */
     public function isElementNillable($name)
     {
-        foreach ($this->element->getElementsByTagName('element') as $element) {
-            if ($element->getAttribute('name') == $name && $element->getAttribute('nillable') == true) {
+    	/** @var DOMElement $element */
+		foreach ($this->element->getElementsByTagName('element') as $element) {
+			if ($element->getAttribute('name') === $name && $element->getAttribute('nillable') === true) {
                 return true;
             }
         }
@@ -72,9 +75,10 @@ class TypeNode extends XmlNode
      */
     public function isElementArray($name)
     {
-        foreach ($this->element->getElementsByTagName('element') as $element) {
-            if ($element->getAttribute('name') == $name &&
-                  ($element->getAttribute('maxOccurs') == 'unbounded'
+    	/** @var DOMElement $element */
+		foreach ($this->element->getElementsByTagName('element') as $element) {
+            if ($element->getAttribute('name') === $name &&
+                  ($element->getAttribute('maxOccurs') === 'unbounded'
                     || $element->getAttribute('maxOccurs') >= 2)
               ) {
                 return true;
@@ -91,7 +95,7 @@ class TypeNode extends XmlNode
     public function getElementMinOccurs($name)
     {
         foreach ($this->element->getElementsByTagName('element') as $element) {
-            if ($element->getAttribute('name') == $name) {
+            if ($element->getAttribute('name') === $name) {
                 $minOccurs = $element->getAttribute('minOccurs');
                 if ($minOccurs === '') {
                     return null;
@@ -101,6 +105,25 @@ class TypeNode extends XmlNode
         }
         return null;
     }
+
+	/**
+  * Returns the maxOccurs value of the element.
+  * @param $name string The name of the sub element
+  * @return string the maxOccurs value of the element
+  */
+	public function getElementMaxOccurs($name): string
+	{
+		foreach ($this->element->getElementsByTagName('element') as $element) {
+			if ($element->getAttribute('name') === $name) {
+				$maxOccurs = $element->getAttribute('maxOccurs');
+				if ($maxOccurs === '') {
+					return null;
+				}
+				return $maxOccurs;
+			}
+		}
+		return null;
+	}
 
     /**
      * Returns the base type for the type.
