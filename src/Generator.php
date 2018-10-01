@@ -157,10 +157,19 @@ class Generator implements GeneratorInterface
 
                 foreach ($typeNode->getParts() as $name => $typeName) {
                     // There are 2 ways a wsdl can indicate that a field accepts the null value -
-                    // by setting the "nillable" attribute to "true" or by setting the "minOccurs" attribute to "0".
+                    // by setting the "nullable" attribute to "true" or by setting the "minOccurs" attribute to "0".
                     // See http://www.ibm.com/developerworks/webservices/library/ws-tip-null/index.html
                     $nullable = $typeNode->isElementNillable($name) || $typeNode->getElementMinOccurs($name) === 0;
-                    $type->addMember($typeName, $name, $nullable);
+
+					// If this is an enumeration, then we should use its restriction as type, and set the type as ExtraType
+					if(array_key_exists($typeName, $types) && count($types[$typeName]->getEnumerations()) > 0)
+					{
+						$type->addMember($types[$typeName]->getRestriction(), $name, $nullable, $typeName);
+					}
+					else
+					{
+						$type->addMember($typeName, $name, $nullable);
+					}
                 }
             } elseif ($enumValues = $typeNode->getEnumerations()) {
                 $type = new Enum($this->config, $typeNode->getName(), $typeNode->getRestriction());

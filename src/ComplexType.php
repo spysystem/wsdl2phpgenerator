@@ -99,11 +99,16 @@ class ComplexType extends Type
         // Add member variables
         foreach ($this->members as $member) {
             $type = Validator::validateType($member->getType());
+            $strCommentType = $type;
+            if($member->getExtraType() !== '')
+			{
+				$strCommentType .='|'.$member->getExtraType();
+			}
             $name = Validator::validateAttribute($member->getName());
             $typeHint = Validator::validateTypeHint($type);
 
             $comment = new PhpDocComment();
-            $comment->setVar(PhpDocElementFactory::getVar($type, $name, ''));
+            $comment->setVar(PhpDocElementFactory::getVar($strCommentType, $name, ''));
             $var = new PhpVariable('protected', $name, 'null', $comment);
             $this->class->addVariable($var);
 
@@ -117,12 +122,12 @@ class ComplexType extends Type
                 } else {
                     $constructorSource .= "\t".'$this->' . $name . ' = $' . $name . ';' . PHP_EOL;
                 }
-                $constructorComment->addParam(PhpDocElementFactory::getParam($type, $name, ''));
+                $constructorComment->addParam(PhpDocElementFactory::getParam($strCommentType, $name, ''));
                 $constructorParameters[$name] = $typeHint;
             }
 
             $getterComment = new PhpDocComment();
-            $getterComment->setReturn(PhpDocElementFactory::getReturn($type, ''));
+            $getterComment->setReturn(PhpDocElementFactory::getReturn($strCommentType, ''));
             if ($type == '\DateTime') {
                 $getterCode =
 					"\t".'if ($this->' . $name . ' == null)' . PHP_EOL .
@@ -147,7 +152,7 @@ class ComplexType extends Type
             $accessors[] = $getter;
 
             $setterComment = new PhpDocComment();
-            $setterComment->addParam(PhpDocElementFactory::getParam($type, $name, ''));
+            $setterComment->addParam(PhpDocElementFactory::getParam($strCommentType, $name, ''));
             $setterComment->setReturn(PhpDocElementFactory::getReturn($this->phpNamespacedIdentifier, ''));
             if ($type == '\DateTime') {
                 if ($member->getNullable()) {
@@ -259,16 +264,17 @@ class ComplexType extends Type
         $this->abstract = $abstract;
     }
 
-    /**
-     * Adds the member. Owerwrites members with same name
-     *
-     * @param string $type
-     * @param string $name
-     * @param bool $nullable
-     */
-    public function addMember($type, $name, $nullable)
+	/**
+	 * Adds the member. Owerwrites members with same name
+	 *
+	 * @param string $type
+	 * @param string $name
+	 * @param bool $nullable
+	 * @param string $strExtraType
+	 */
+    public function addMember($type, $name, $nullable, string $strExtraType = '')
     {
-        $this->members[$name] = new Variable($type, $name, $nullable);
+        $this->members[$name] = new Variable($type, $name, $nullable, $strExtraType);
     }
 
     /**

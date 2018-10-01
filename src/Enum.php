@@ -5,6 +5,7 @@
  */
 namespace Wsdl2PhpGenerator;
 
+use Exception;
 use \InvalidArgumentException;
 use Wsdl2PhpGenerator\PhpSource\PhpClass;
 

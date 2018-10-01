@@ -250,7 +250,7 @@ class Service implements ClassGenerator
 
         $strCreateSource	= str_replace(["'USERNAME-PLACEHOLDER'", "'PASSWORD-PLACEHOLDER'"], ['$strUsername', '$strPassword'], $strCreateSource);
 
-        $oCreateFunction	= new PhpFunction('public static', 'Create', implode(', ', $arrParameters), $strCreateSource, $oCreateComment, $name);
+        $oCreateFunction	= new PhpFunction('public static', 'CreateService', implode(', ', $arrParameters), $strCreateSource, $oCreateComment, $name);
 
 
         $this->class->addFunction($oCreateFunction);

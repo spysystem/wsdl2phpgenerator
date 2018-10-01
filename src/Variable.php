@@ -28,16 +28,21 @@ class Variable
      */
     private $nullable;
 
-    /**
-     * @param string $type
-     * @param string $name
-     * @param bool $nullable
-     */
-    public function __construct($type, $name, $nullable)
+    /** @var string Extra Type for Enum variables */
+    private $strExtraType;
+
+	/**
+	 * @param string $type
+	 * @param string $name
+	 * @param bool $nullable
+	 * @param $strExtraType
+	 */
+    public function __construct($type, $name, $nullable, $strExtraType)
     {
-        $this->type = $type;
-        $this->name = $name;
-        $this->nullable = $nullable;
+        $this->type			= $type;
+        $this->name			= $name;
+        $this->nullable		= $nullable;
+        $this->strExtraType	= $strExtraType;
     }
 
     /**
@@ -63,6 +68,14 @@ class Variable
     {
         return $this->nullable;
     }
+
+	/**
+	 * @return string
+	 */
+    public function getExtraType(): string
+	{
+		return $this->strExtraType;
+	}
 
     /**
      * @return boolean

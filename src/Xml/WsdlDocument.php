@@ -66,7 +66,7 @@ class WsdlDocument extends SchemaDocument
                 $type->setElement($this->document, $element);
             }
 
-            $types[] = $type;
+            $types[$type->getName()] = $type;
         }
 
         return $types;
