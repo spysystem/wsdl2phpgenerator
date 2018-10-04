@@ -227,6 +227,8 @@ class Validator
 			case 'date':
                 return 'string';
                 break;
+			case 'boolean':
+				return 'bool';
             case 'datetime':
                 return DateTime::class;
                 break;
