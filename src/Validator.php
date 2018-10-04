@@ -243,28 +243,6 @@ class Validator
     }
 
     /**
-     * Validates a type to be used as a method parameter type hint.
-     *
-     * @param string $typeName The name of the type to test.
-     * @return null|string Returns a valid type hint for the type or null if there is no valid type hint.
-     */
-    public static function validateTypeHint(string $typeName): ?string
-	{
-        $typeHint = null;
-
-        // We currently only support type hints for arrays and DateTimes.
-        // Going forward we could support it for generated types. The challenge here are enums as they are actually
-        // strings and not class instances and we have no way of determining whether the type is an enum at this point.
-        if (substr($typeName, -2) === '[]') {
-            $typeHint = 'array';
-        } elseif ($typeName === DateTime::class) {
-            $typeHint = $typeName;
-        }
-
-        return $typeHint;
-    }
-
-    /**
      * Validate that a name is unique.
      *
      * If a name is not unique then append a suffix and numbering.

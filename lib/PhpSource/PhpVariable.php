@@ -40,7 +40,7 @@ class PhpVariable extends PhpElement
         $this->access = $access;
         $this->identifier = $identifier;
         $this->initialization = '';
-        if (strlen($initialization)) {
+        if ($initialization !== '') {
             $this->initialization = ' = ' . $initialization;
         }
     }

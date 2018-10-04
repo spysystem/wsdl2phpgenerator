@@ -5,7 +5,7 @@
 namespace Wsdl2PhpGenerator;
 
 /**
- * Very stupid datatype to use instead of array
+ * Very stupid data type to use instead of array
  *
  * @package Wsdl2PhpGenerator
  * @author Fredrik Wallgren <fredrik.wallgren@gmail.com>
@@ -31,6 +31,9 @@ class Variable
     /** @var string Extra Type for Enum variables */
     private $strExtraType;
 
+    /** @var string Validated value for the current type*/
+    private $strValidatedType;
+
 	/**
 	 * @param string $type
 	 * @param string $name
@@ -39,33 +42,74 @@ class Variable
 	 */
     public function __construct($type, $name, $nullable, $strExtraType)
     {
-        $this->type			= $type;
-        $this->name			= $name;
-        $this->nullable		= $nullable;
-        $this->strExtraType	= $strExtraType;
+        $this->type				= $type;
+        $this->name				= $name;
+        $this->nullable			= $nullable;
+        $this->strExtraType		= $strExtraType;
+        $this->strValidatedType	= Validator::validateType($this->type);
     }
 
     /**
      * @return string
      */
-    public function getType()
-    {
+    public function getType(): string
+	{
         return $this->type;
     }
 
+	/**
+	 * @return string
+	 */
+    public function getTypeHint(): string
+	{
+		if($this->strExtraType !== '')
+		{
+			return '';
+		}
+
+		$strNull = $this->nullable ? '?' : '';
+
+		if(strpos($this->strValidatedType, '[]') !== false)
+		{
+			return $strNull.'array';
+		}
+
+		return $strNull.$this->strValidatedType;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCommentType(): string
+	{
+		$strCommentType	= $this->strValidatedType;
+
+		if($this->strExtraType !== '')
+		{
+			$strCommentType	.='|'.$this->strExtraType;
+		}
+
+		if($this->nullable)
+		{
+			$strCommentType = 'null|'.$strCommentType;
+		}
+
+		return $strCommentType;
+	}
+
     /**
      * @return string
      */
-    public function getName()
-    {
+    public function getName(): string
+	{
         return $this->name;
     }
 
     /**
      * @return boolean
      */
-    public function getNullable()
-    {
+    public function getNullable(): bool
+	{
         return $this->nullable;
     }
 
@@ -80,8 +124,8 @@ class Variable
     /**
      * @return boolean
      */
-    public function isArray()
-    {
-        return substr($this->type, -2, 2) == '[]';
+    public function isArray(): bool
+	{
+        return substr($this->type, -2, 2) === '[]';
     }
 }
