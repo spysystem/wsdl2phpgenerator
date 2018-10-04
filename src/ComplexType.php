@@ -69,7 +69,7 @@ class ComplexType extends Type
 
         $classBaseType = $this->getBaseTypeClass();
 
-        $oClassComment	= new PhpDocComment('Class '.$classBaseType);
+        $oClassComment	= new PhpDocComment('Class '.$this->phpIdentifier);
 
         $this->class = new PhpClass(
             $this->phpIdentifier,
@@ -154,7 +154,7 @@ class ComplexType extends Type
 
             $setterComment = new PhpDocComment();
             $setterComment->addParam(PhpDocElementFactory::getParam($strCommentType, $name, ''));
-            $setterComment->setReturn(PhpDocElementFactory::getReturn($classBaseType, ''));
+            $setterComment->setReturn(PhpDocElementFactory::getReturn($this->phpIdentifier, ''));
             if ($type === DateTime::class) {
                 if ($member->getNullable()) {
                     $setterCode =
@@ -186,7 +186,7 @@ class ComplexType extends Type
                 ),
                 $setterCode,
                 $setterComment,
-				$classBaseType
+				$this->phpIdentifier
             );
             $accessors[] = $setter;
         }

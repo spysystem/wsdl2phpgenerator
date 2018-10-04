@@ -54,6 +54,7 @@ class PhpFunction extends PhpElement
 	 * @param string        $source
 	 * @param PhpDocComment $comment
 	 * @param string        $strReturn
+	 * @param bool          $bReturnIsNullable
 	 */
     public function __construct($access, $identifier, $params, $source, PhpDocComment $comment = null, string $strReturn = '', bool $bReturnIsNullable = false)
     {
