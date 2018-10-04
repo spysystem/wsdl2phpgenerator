@@ -306,7 +306,7 @@ class Service implements ClassGenerator
             $name = Validator::validateOperation($operation->getName());
 
             $comment = new PhpDocComment($operation->getDescription());
-            $comment->setReturn(PhpDocElementFactory::getReturn($operation->getReturns(), ''));
+            $comment->setReturn(PhpDocElementFactory::getReturn($operation->getReturns().'|null', ''));
 
             foreach ($operation->getParams() as $param => $hint) {
                 $arr = $operation->getPhpDocParams($param, $this->types);
@@ -324,7 +324,7 @@ class Service implements ClassGenerator
 				$strReturnType = $operation->getReturns();
 			}
 
-            $function = new PhpFunction('public', $name, $paramStr, $source, $comment, $strReturnType);
+            $function = new PhpFunction('public', $name, $paramStr, $source, $comment, $strReturnType, true);
 
             if (!$this->class->functionExists($function->getIdentifier())) {
                 $this->class->addFunction($function);

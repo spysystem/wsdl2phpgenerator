@@ -38,7 +38,13 @@ class PhpFunction extends PhpElement
 	 *
 	 * @var string PHP 7.1 Return type
 	 */
-    private $return;
+	private $return;
+
+	/**
+	 * @var bool true is return type is nullable
+	 */
+	private $bReturnIsNullable;
+
 
 	/**
 	 *
@@ -49,14 +55,15 @@ class PhpFunction extends PhpElement
 	 * @param PhpDocComment $comment
 	 * @param string        $strReturn
 	 */
-    public function __construct($access, $identifier, $params, $source, PhpDocComment $comment = null, string $strReturn = '')
+    public function __construct($access, $identifier, $params, $source, PhpDocComment $comment = null, string $strReturn = '', bool $bReturnIsNullable = false)
     {
-        $this->access = $access;
-        $this->identifier = $identifier;
-        $this->params = $params;
-        $this->source = $source;
-        $this->comment = $comment;
-        $this->return = $strReturn;
+        $this->access				= $access;
+        $this->identifier			= $identifier;
+        $this->params				= $params;
+        $this->source				= $source;
+        $this->comment				= $comment;
+        $this->return				= $strReturn;
+        $this->bReturnIsNullable	= $bReturnIsNullable;
     }
 
     /**
@@ -72,10 +79,18 @@ class PhpFunction extends PhpElement
             $ret .= $this->getSourceRow($this->comment->getSource());
         }
 
-        $strReturn = '';
+		$strReturn = '';
+
 		if($this->return !== '')
 		{
-			$strReturn = ': '.$this->return;
+			$strReturn	= ': ';
+
+			if($this->bReturnIsNullable)
+			{
+				$strReturn .= '?';
+			}
+
+			$strReturn .= $this->return;
 		}
 
         $ret .= $this->getSourceRow($this->access . ' function ' . $this->identifier . '(' . $this->params . ')'.$strReturn);

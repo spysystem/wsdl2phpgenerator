@@ -4,13 +4,15 @@
  */
 namespace Wsdl2PhpGenerator;
 
+use DateTime;
+
 /**
  * Class that contains functionality to validate a string as valid php
- * Contains functionf for validating Type, Classname and Naming convention
+ * Contains functions for validating Type, class name and Naming convention
  *
  * @package Wsdl2PhpGenerator
  * @author Fredrik Wallgren <fredrik.wallgren@gmail.com>
- * @license http://www.opensource.org/licenses/mit-license.php MIT License
+*  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 class Validator
 {
@@ -20,14 +22,14 @@ class Validator
      * @var string
      */
 
-    const NAME_PREFIX = 'a';
+    private const NAME_PREFIX = 'a';
 
     /**
      * The suffix to append to invalid names.
      *
      * @var string
      */
-    const NAME_SUFFIX = 'Custom';
+    private const NAME_SUFFIX = 'Custom';
 
     /**
      * Array containing all PHP keywords.
@@ -116,11 +118,15 @@ class Validator
      * @param string $namespace the name of the namespace
      * @return string The validated version of the submitted class name
      */
-    public static function validateClass($name, $namespace = null)
-    {
+    public static function validateClass($name, $namespace = null): string
+	{
         $name = self::validateNamingConvention($name);
 
-        $prefix = !empty($namespace) ? $namespace . '\\' : '';
+        $prefix	= $namespace ?? '';
+        if($prefix !== '')
+		{
+			$prefix	.= '\\';
+		}
 
         $name = self::validateUnique($name, function ($name) use ($prefix) {
                 // Use reflection to get access to private isKeyword method.
@@ -142,8 +148,8 @@ class Validator
      * @param string $name the name of the operation to test
      * @return string The validated version of the submitted operation name
      */
-    public static function validateOperation($name)
-    {
+    public static function validateOperation(string $name): string
+	{
         $name = self::validateNamingConvention($name);
         if (self::isKeyword($name)) {
             $name = self::NAME_PREFIX . ucfirst($name);
@@ -157,8 +163,8 @@ class Validator
      * @param string $name the name of the attribute to test
      * @return string The validated version of the submitted attribute name
      */
-    public static function validateAttribute($name)
-    {
+    public static function validateAttribute(string $name): string
+	{
         // Contrary to other validations attributes can have names which are also keywords. Thus no need to check for
         // this here.
         return self::validateNamingConvention($name);
@@ -170,8 +176,8 @@ class Validator
      * @param string $name the name of the constant to test
      * @return string The validated version of the submitted constant name
      */
-    public static function validateConstant($name)
-    {
+    public static function validateConstant(string $name): string
+	{
         $name = self::validateNamingConvention($name);
         if (self::isKeyword($name)) {
             $name = self::NAME_PREFIX . ucfirst($name);
@@ -186,42 +192,43 @@ class Validator
      * @param string $typeName the type to test
      * @return string the validated version of the submitted type
      */
-    public static function validateType($typeName)
-    {
-        if (substr($typeName, -2) == "[]") {
-            return self::validateNamingConvention(substr($typeName, 0, -2)) . "[]";
+    public static function validateType(string $typeName): string
+	{
+        if (substr($typeName, -2) === '[]') {
+            return self::validateNamingConvention(substr($typeName, 0, -2)) . '[]';
         }
 
         switch (strtolower($typeName)) {
-            case "int":
-            case "integer":
-            case "long":
-            case "byte":
-            case "short":
-            case "negativeinteger":
-            case "nonnegativeinteger":
-            case "nonpositiveinteger":
-            case "positiveinteger":
-            case "unsignedbyte":
-            case "unsignedint":
-            case "unsignedlong":
-            case "unsignedshort":
+            case 'int':
+            case 'integer':
+            case 'long':
+            case 'byte':
+            case 'short':
+            case 'negativeinteger':
+            case 'nonnegativeinteger':
+            case 'nonpositiveinteger':
+            case 'positiveinteger':
+            case 'unsignedbyte':
+            case 'unsignedint':
+            case 'unsignedlong':
+            case 'unsignedshort':
                 return 'int';
                 break;
-            case "float":
-            case "double":
-            case "decimal":
+            case 'float':
+            case 'double':
+            case 'decimal':
                 return 'float';
                 break;
-            case "<anyxml>":
-            case "string":
-            case "token":
-            case "normalizedstring":
-            case "hexbinary":
+            case '<anyxml>':
+            case 'string':
+            case 'token':
+            case 'normalizedstring':
+            case 'hexbinary':
+			case 'date':
                 return 'string';
                 break;
-            case "datetime":
-                return  '\DateTime';
+            case 'datetime':
+                return DateTime::class;
                 break;
             default:
                 $typeName = self::validateNamingConvention($typeName);
@@ -241,16 +248,16 @@ class Validator
      * @param string $typeName The name of the type to test.
      * @return null|string Returns a valid type hint for the type or null if there is no valid type hint.
      */
-    public static function validateTypeHint($typeName)
-    {
+    public static function validateTypeHint(string $typeName): ?string
+	{
         $typeHint = null;
 
         // We currently only support type hints for arrays and DateTimes.
         // Going forward we could support it for generated types. The challenge here are enums as they are actually
         // strings and not class instances and we have no way of determining whether the type is an enum at this point.
-        if (substr($typeName, -2) == "[]") {
+        if (substr($typeName, -2) === '[]') {
             $typeHint = 'array';
-        } elseif ($typeName == '\DateTime') {
+        } elseif ($typeName === DateTime::class) {
             $typeHint = $typeName;
         }
 
@@ -262,19 +269,19 @@ class Validator
      *
      * If a name is not unique then append a suffix and numbering.
      *
-     * @param $name The name to test.
+     * @param string $name The name to test.
      * @param callable $function A callback which should return true if the element is unique. Otherwise false.
      * @param string $suffix A suffix to append between the name and numbering.
      * @return string A unique name.
      */
-    public static function validateUnique($name, $function, $suffix = null)
-    {
+    public static function validateUnique($name, $function, $suffix = null): string
+	{
         $i = 1;
         $newName = $name;
-        while (!call_user_func($function, $newName)) {
+        while (!$function($newName)) {
             if (!$suffix) {
                 $newName = $name . ($i + 1);
-            } elseif ($i == 1) {
+            } elseif ($i === 1) {
                 $newName = $name . $suffix;
             } else {
                 $newName = $name . $suffix . $i;
@@ -291,16 +298,16 @@ class Validator
      * @param string $name the name to validate
      * @return string the validated version of the submitted name
      */
-    private static function validateNamingConvention($name)
-    {
-        $name = iconv("UTF-8", "ASCII//TRANSLIT", $name);
+    private static function validateNamingConvention(string $name): string
+	{
+        $name = iconv('UTF-8', 'ASCII//TRANSLIT', $name);
 
         // Prepend the string a to names that begin with anything but a-z This is to make a valid name
-        if (preg_match('/^[A-Za-z_]/', $name) == false) {
+        if (preg_match('/^[A-Za-z_]/', $name) === false) {
             $name = self::NAME_PREFIX . ucfirst($name);
         }
 
-        return preg_replace('/[^a-zA-Z0-9_x7f-xff]*/', '', preg_replace('/^[^a-zA-Z_x7f-xff]*/', '', $name));
+        return preg_replace('/[^a-zA-Z0-9_\x7f-\xff]*/', '', preg_replace('/^[^a-zA-Z_\x7f-\xff]*/', '', $name));
     }
 
     /**
@@ -309,8 +316,8 @@ class Validator
      * @param string $string the string to check..
      * @return boolean Whether the string is a restricted keyword.
      */
-    private static function isKeyword($string)
-    {
-        return in_array(strtolower($string), self::$keywords);
+    private static function isKeyword(string $string): bool
+	{
+        return \in_array(strtolower($string), self::$keywords, true);
     }
 }
