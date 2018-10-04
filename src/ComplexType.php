@@ -184,7 +184,8 @@ class ComplexType extends Type
                     $member->getNullable() && !empty($typeHint)
                 ),
                 $setterCode,
-                $setterComment
+                $setterComment,
+				'void'
             );
             $accessors[] = $setter;
         }

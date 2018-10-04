@@ -5,7 +5,10 @@
  */
 namespace Wsdl2PhpGenerator;
 
+use ArrayAccess;
+use Countable;
 use \Exception;
+use Iterator;
 use Wsdl2PhpGenerator\PhpSource\PhpDocComment;
 use Wsdl2PhpGenerator\PhpSource\PhpDocElementFactory;
 use Wsdl2PhpGenerator\PhpSource\PhpFunction;
@@ -36,7 +39,7 @@ class ArrayType extends ComplexType
      *
      * @throws Exception if the class is already generated(not null)
      */
-    protected function generateClass()
+    protected function generateClass(): void
     {
         parent::generateClass();
 
@@ -47,9 +50,12 @@ class ArrayType extends ComplexType
         }
     }
 
-    protected function implementArrayAccess()
+	/**
+	 * @throws Exception
+	 */
+    protected function implementArrayAccess(): void
     {
-        $this->class->addImplementation('\\ArrayAccess');
+        $this->class->addImplementation(ArrayAccess::class);
         $description = 'ArrayAccess implementation';
 
         $offsetExistsDock = new PhpDocComment();
@@ -67,7 +73,8 @@ class ArrayType extends ComplexType
                 false
             ),
             "\t".'return isset($this->' . $this->field->getName() . '[$offset]);',
-            $offsetExistsDock
+            $offsetExistsDock,
+			'bool'
         );
         $this->class->addFunction($offsetExists);
 
@@ -108,13 +115,14 @@ class ArrayType extends ComplexType
             ),
 			"\t".'if (!isset($offset))' . PHP_EOL .
 			"\t".'{' . PHP_EOL .
-			"\t\t".'$this->' . $this->field->getName() . '[] = $value;' . PHP_EOL .
+			"\t\t".'$this->' . $this->field->getName() . '[]		= $value;' . PHP_EOL .
 			"\t".'}' . PHP_EOL .
 			"\t".'else' . PHP_EOL .
 			"\t".'{' . PHP_EOL .
-			"\t\t".'$this->' . $this->field->getName() . '[$offset] = $value;' . PHP_EOL .
+			"\t\t".'$this->' . $this->field->getName() . '[$offset]	= $value;' . PHP_EOL .
 			"\t".'}',
-            $offsetSetDock
+            $offsetSetDock,
+			'void'
         );
         $this->class->addFunction($offsetSet);
 
@@ -133,14 +141,18 @@ class ArrayType extends ComplexType
                 false
             ),
 			"\t".'unset($this->' . $this->field->getName() . '[$offset]);',
-            $offsetUnsetDock
+            $offsetUnsetDock,
+			'void'
         );
         $this->class->addFunction($offsetUnset);
     }
 
-    protected function implementIterator()
-    {
-        $this->class->addImplementation('\\Iterator');
+	/**
+	 * @throws Exception
+	 */
+    protected function implementIterator(): void
+	{
+        $this->class->addImplementation(Iterator::class);
         $description = 'Iterator implementation';
 
         $currentDock = new PhpDocComment();
@@ -171,7 +183,8 @@ class ArrayType extends ComplexType
                 false
             ),
 			"\t".'next($this->' . $this->field->getName() . ');',
-            $nextDock
+            $nextDock,
+			'void'
         );
         $this->class->addFunction($next);
 
@@ -203,7 +216,8 @@ class ArrayType extends ComplexType
                 false
             ),
 			"\t".'return $this->key() !== null;',
-            $validDock
+            $validDock,
+			'bool'
         );
         $this->class->addFunction($valid);
 
@@ -219,14 +233,18 @@ class ArrayType extends ComplexType
                 false
             ),
 			"\t".'reset($this->' . $this->field->getName() . ');',
-            $rewindDock
+            $rewindDock,
+			'void'
         );
         $this->class->addFunction($rewind);
     }
 
-    protected function implementCountable()
-    {
-        $this->class->addImplementation('\\Countable');
+	/**
+	 * @throws Exception
+	 */
+    protected function implementCountable(): void
+	{
+        $this->class->addImplementation(Countable::class);
         $description = 'Countable implementation';
 
         $countDock = new PhpDocComment();
@@ -246,8 +264,11 @@ class ArrayType extends ComplexType
         $this->class->addFunction($count);
     }
 
-    protected function implementArrayInterfaces()
-    {
+	/**
+	 * @throws Exception
+	 */
+    protected function implementArrayInterfaces(): void
+	{
         $members = array_values($this->members);
         $this->field = $members[0];
         $this->arrayOf = substr($this->field->getType(), 0, -2);
