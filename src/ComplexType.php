@@ -69,11 +69,13 @@ class ComplexType extends Type
 
         $classBaseType = $this->getBaseTypeClass();
 
+        $oClassComment	= new PhpDocComment('Class '.$classBaseType);
+
         $this->class = new PhpClass(
             $this->phpIdentifier,
             false,
             $classBaseType,
-            null,
+            $oClassComment,
             false,
             $this->abstract
         );
@@ -87,12 +89,11 @@ class ComplexType extends Type
         $parentMembers = $this->getBaseTypeMembers($this);
         if (!empty($parentMembers)) {
             foreach ($parentMembers as $member) {
-                $type = Validator::validateType($member->getType());
                 $name = Validator::validateAttribute($member->getName());
 
                 if (!$member->getNullable()) {
-                    $constructorComment->addParam(PhpDocElementFactory::getParam($type, $name, ''));
-                    $constructorParameters[$name] = Validator::validateTypeHint($type);
+                    $constructorComment->addParam(PhpDocElementFactory::getParam($member->getCommentType(), $name, ''));
+                    $constructorParameters[$name]	= $member->getTypeHint();
                 }
             }
             $constructorSource .= "\t".'parent::__construct(' . $this->buildParametersString($constructorParameters, false) . ');' . PHP_EOL;
@@ -101,17 +102,15 @@ class ComplexType extends Type
         // Add member variables
         foreach ($this->members as $member) {
             $type = Validator::validateType($member->getType());
-            $strCommentType = $type;
-            if($member->getExtraType() !== '')
-			{
-				$strCommentType .='|'.$member->getExtraType();
-			}
+
+            $strCommentType	= $member->getCommentType();
+
             $name = Validator::validateAttribute($member->getName());
-            $typeHint = Validator::validateTypeHint($type);
+            $strTypeHint	= $member->getTypeHint();
 
             $comment = new PhpDocComment();
             $comment->setVar(PhpDocElementFactory::getVar($strCommentType, $name, ''));
-            $var = new PhpVariable('protected', $name, 'null', $comment);
+            $var = new PhpVariable('protected', $name, '', $comment);
             $this->class->addVariable($var);
 
             if (!$member->getNullable()) {
@@ -125,7 +124,7 @@ class ComplexType extends Type
                     $constructorSource .= "\t".'$this->' . $name . ' = $' . $name . ';' . PHP_EOL;
                 }
                 $constructorComment->addParam(PhpDocElementFactory::getParam($strCommentType, $name, ''));
-                $constructorParameters[$name] = $typeHint;
+                $constructorParameters[$name] = $strTypeHint;
             }
 
             $getterComment = new PhpDocComment();
@@ -150,16 +149,16 @@ class ComplexType extends Type
             } else {
                 $getterCode = "\t".'return $this->' . $name . ';' . PHP_EOL;
             }
-            $getter = new PhpFunction('public', 'get' . ucfirst($name), '', $getterCode, $getterComment);
+            $getter = new PhpFunction('public', 'get' . ucfirst($name), '', $getterCode, $getterComment, $strTypeHint);
             $accessors[] = $getter;
 
             $setterComment = new PhpDocComment();
             $setterComment->addParam(PhpDocElementFactory::getParam($strCommentType, $name, ''));
-            $setterComment->setReturn(PhpDocElementFactory::getReturn($this->phpNamespacedIdentifier, ''));
+            $setterComment->setReturn(PhpDocElementFactory::getReturn($classBaseType, ''));
             if ($type === DateTime::class) {
                 if ($member->getNullable()) {
                     $setterCode =
-						"\t".'if ($' . $name . ' == null)' . PHP_EOL .
+						"\t".'if ($' . $name . ' === null)' . PHP_EOL .
 						"\t".'{' . PHP_EOL .
 						"\t\t".'$this->' . $name . ' = null;' . PHP_EOL .
 						"\t".'}' . PHP_EOL .
@@ -178,16 +177,16 @@ class ComplexType extends Type
                 'public',
                 'set' . ucfirst($name),
                 $this->buildParametersString(
-                    array($name => $typeHint),
+                    array($name => $strTypeHint),
                     true,
                     // If the type of a member is nullable we should allow passing null to the setter. If the type
                     // of the member is a class and not a primitive this is only possible if setter parameter has
                     // a default null value. We can detect whether the type is a class by checking the type hint.
-                    $member->getNullable() && ( ($typeHint ?? '') !== '')
+                    $member->getNullable() && ( ($strTypeHint ?? '') !== '')
                 ),
                 $setterCode,
                 $setterComment,
-				$this->phpNamespacedIdentifier
+				$classBaseType
             );
             $accessors[] = $setter;
         }
