@@ -149,7 +149,7 @@ class ComplexType extends Type
             } else {
                 $getterCode = "\t".'return $this->' . $name . ';' . PHP_EOL;
             }
-            $getter = new PhpFunction('public', 'get' . ucfirst($name), '', $getterCode, $getterComment, $strTypeHint);
+            $getter = new PhpFunction('public', 'get' . ucfirst($name), '', $getterCode, $getterComment, $member->getTypeHint(true));
             $accessors[] = $getter;
 
             $setterComment = new PhpDocComment();

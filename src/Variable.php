@@ -58,16 +58,18 @@ class Variable
     }
 
 	/**
+	 * @param bool $bForceNull
+	 *
 	 * @return string
 	 */
-    public function getTypeHint(): string
+    public function getTypeHint(bool $bForceNull = false): string
 	{
 		if($this->strExtraType !== '')
 		{
 			return '';
 		}
 
-		$strNull = $this->nullable ? '?' : '';
+		$strNull	= $bForceNull || $this->nullable ? '?' : '';
 
 		if(strpos($this->strValidatedType, '[]') !== false)
 		{
