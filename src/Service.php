@@ -221,6 +221,7 @@ class Service implements ClassGenerator
 		$this->class->addConstant($this->config->get('inputFile'), 'WsdlUrl');
 		$this->class->addUseClause(trim($strSoapClientClass, '\\'));
 		$this->class->addUseClause('Exception');
+		$this->class->addUseClause('SoapFault');
 
         $oCreateComment	= new PhpDocComment();
         $oCreateComment->setReturn(PhpDocElementFactory::getReturn($name, ''));
@@ -307,6 +308,7 @@ class Service implements ClassGenerator
 
             $comment = new PhpDocComment($operation->getDescription());
             $comment->setReturn(PhpDocElementFactory::getReturn($operation->getReturns().'|null', ''));
+            $comment->addThrows(PhpDocElementFactory::getThrows('SoapFault', ''));
 
             foreach ($operation->getParams() as $param => $hint) {
                 $arr = $operation->getPhpDocParams($param, $this->types);
