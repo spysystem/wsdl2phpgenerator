@@ -281,6 +281,41 @@ class Service implements ClassGenerator
         // Add the constructor
         $this->class->addFunction($function);
 
+        #region __doRequest
+
+		$comment = new PhpDocComment();
+		$comment->addParam(PhpDocElementFactory::getParam('string', 'request', ''));
+		$comment->addParam(PhpDocElementFactory::getParam('string', 'location', ''));
+		$comment->addParam(PhpDocElementFactory::getParam('string', 'action', ''));
+		$comment->addParam(PhpDocElementFactory::getParam('int', 'version', ''));
+		$comment->addParam(PhpDocElementFactory::getParam('int', 'one_way', ''));
+		$comment->setReturn(PhpDocElementFactory::getReturn('string|null', ''));
+
+		$source	= '
+	$this->request	= $request;
+	
+	return parent::__doRequest($request, $location, $action, $version, $one_way);' . PHP_EOL;
+
+		$function = new PhpFunction('public', '__doRequest', '$request, $location, $action, $version, $one_way = 0', $source, $comment, 'string', true);
+
+		$this->class->addFunction($function);
+
+		#endregion
+
+        #region __doRequest
+
+		$comment = new PhpDocComment();
+		$comment->setReturn(PhpDocElementFactory::getReturn('string', ''));
+
+		$source	= '
+		return $this->request ?? \'\';' . PHP_EOL;
+
+		$function = new PhpFunction('public', '__getLastRequest', '', $source, $comment, 'string');
+
+		$this->class->addFunction($function);
+
+		#endregion
+
         // Generate the classmap
         $name = 'arrClassMap';
         $comment = new PhpDocComment();
@@ -301,6 +336,12 @@ class Service implements ClassGenerator
 
         // Add the classmap variable
         $this->class->addVariable($var);
+
+        $oRequestComment	= new PhpDocComment();
+        $oRequestComment->setVar(PhpDocElementFactory::getVar('string', 'request', 'Last request made'));
+        $oRequestVar	= new PhpVariable('private ', 'request', "''", $oRequestComment);
+
+        $this->class->addVariable($oRequestVar);
 
         // Add all methods
         foreach ($this->operations as $operation) {
