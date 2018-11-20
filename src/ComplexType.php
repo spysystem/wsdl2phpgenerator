@@ -115,17 +115,19 @@ class ComplexType extends Type
             $var = new PhpVariable('protected', $name, '', $comment);
             $this->class->addVariable($var);
 
+            if($type === DateTime::class && !$this->bHasDateTimeUseClause)
+			{
+				$this->class->addUseClause(DateTime::class);
+				$this->class->addUseClause(Exception::class);
+				$this->bHasDateTimeUseClause	= true;
+			}
+
             if (!$member->getNullable()) {
                 if ($type === DateTime::class) {
-                	if(!$this->bHasDateTimeUseClause)
-					{
-						$this->class->addUseClause(DateTime::class);
-						$this->bHasDateTimeUseClause	= true;
-					}
                     if ($this->config->get('constructorParamsDefaultToNull')) {
-                        $constructorSource .= "\t".'$this->' . $name . ' = $' . $name . ' ? $' . $name . '->format(\DateTime::ATOM) : null;' . PHP_EOL;
+                        $constructorSource .= "\t".'$this->' . $name . ' = $' . $name . ' ? $' . $name . '->format(DateTime::ATOM) : null;' . PHP_EOL;
                     } else {
-                        $constructorSource .= "\t".'$this->' . $name . ' = $' . $name . '->format(\DateTime::ATOM);' . PHP_EOL;
+                        $constructorSource .= "\t".'$this->' . $name . ' = $' . $name . '->format(DateTime::ATOM);' . PHP_EOL;
                     }
                 } else {
                     $constructorSource .= "\t".'$this->' . $name . ' = $' . $name . ';' . PHP_EOL;
@@ -144,9 +146,9 @@ class ComplexType extends Type
 					"\t".'}' . PHP_EOL .
 					"\t".'try' . PHP_EOL .
 					"\t".'{' . PHP_EOL .
-					"\t\t".'return new \DateTime($this->' . $name . ');' . PHP_EOL .
+					"\t\t".'return new DateTime($this->' . $name . ');' . PHP_EOL .
 					"\t".'}' . PHP_EOL .
-					"\t".'catch (\Exception $oException)' . PHP_EOL .
+					"\t".'catch (Exception $oException)' . PHP_EOL .
 					"\t".'{' . PHP_EOL .
 					"\t\t".'return null;' . PHP_EOL .
 					"\t".'}' . PHP_EOL
@@ -169,10 +171,10 @@ class ComplexType extends Type
 						"\t".'}' . PHP_EOL .
 						"\t".'else' . PHP_EOL .
 						"\t".'{' . PHP_EOL .
-						"\t\t".'$this->' . $name . ' = $' . $name . '->format(\DateTime::ATOM);' . PHP_EOL .
+						"\t\t".'$this->' . $name . ' = $' . $name . '->format(DateTime::ATOM);' . PHP_EOL .
 						"\t".'}' . PHP_EOL;
                 } else {
-                    $setterCode = "\t".'$this->' . $name . ' = $' . $name . '->format(\DateTime::ATOM);' . PHP_EOL;
+                    $setterCode = "\t".'$this->' . $name . ' = $' . $name . '->format(DateTime::ATOM);' . PHP_EOL;
                 }
             } else {
                 $setterCode = "\t".'$this->' . $name . ' = $' . $name . ';' . PHP_EOL;
