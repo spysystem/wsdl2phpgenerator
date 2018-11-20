@@ -138,21 +138,19 @@ class ComplexType extends Type
             $getterComment->setReturn(PhpDocElementFactory::getReturn($strCommentType, ''));
             if ($type === DateTime::class) {
                 $getterCode =
-					"\t".'if ($this->' . $name . ' == null)' . PHP_EOL .
+					"\t".'if ($this->' . $name . ' === null)' . PHP_EOL .
 					"\t".'{' . PHP_EOL .
                     "\t\t".'return null;' . PHP_EOL .
 					"\t".'}' . PHP_EOL .
-					"\t".'else' . PHP_EOL .
+					"\t".'try' . PHP_EOL .
 					"\t".'{' . PHP_EOL .
-					"\t\t".'try' . PHP_EOL .
-					"\t\t".'{' . PHP_EOL .
-					"\t\t\t".'return new \DateTime($this->' . $name . ');' . PHP_EOL .
-					"\t\t".'}' . PHP_EOL .
-					"\t\t".'catch (\Exception $oException)' . PHP_EOL .
-					"\t\t".'{' . PHP_EOL .
-					"\t\t\t".'return false;' . PHP_EOL .
-					"\t\t".'}' . PHP_EOL .
-					"\t".'}' . PHP_EOL;
+					"\t\t".'return new \DateTime($this->' . $name . ');' . PHP_EOL .
+					"\t".'}' . PHP_EOL .
+					"\t".'catch (\Exception $oException)' . PHP_EOL .
+					"\t".'{' . PHP_EOL .
+					"\t\t".'return null;' . PHP_EOL .
+					"\t".'}' . PHP_EOL
+				;
             } else {
                 $getterCode = "\t".'return $this->' . $name . ';' . PHP_EOL;
             }
