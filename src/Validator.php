@@ -225,6 +225,7 @@ class Validator
             case 'normalizedstring':
             case 'hexbinary':
 			case 'date':
+			case 'time':
                 return 'string';
                 break;
 			case 'boolean':
