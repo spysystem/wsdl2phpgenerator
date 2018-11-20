@@ -79,7 +79,7 @@ class SchemaDocument extends XmlNode
                                 '//s:include/@schemaLocation') as $reference) {
             $referenceUrl = $reference->value;
             if (strpos($referenceUrl, '//') === false) {
-                $referenceUrl = dirname($xsdUrl) . '/' . $referenceUrl;
+                $referenceUrl = \dirname($xsdUrl) . '/' . $referenceUrl;
             }
 
 			if (!array_key_exists($referenceUrl, self::$loadedUrls)) {
@@ -97,7 +97,7 @@ class SchemaDocument extends XmlNode
 	 * @param string $name The name of the type
 	 * @return DOMElement|null Returns the type node with the provided if it is found. Null otherwise.
 	 */
-	public function findTypeElement($name)
+	public function findTypeElement(string $name): ?DOMElement
 	{
 		return $this->findTypeElementFromSchema($name);
 	}
@@ -110,7 +110,8 @@ class SchemaDocument extends XmlNode
 	* @param SchemaDocument[] $checkedImports
 	* @return DOMElement|null Returns the type node with the provided if it is found. Null otherwise.
 	*/
-	private function findTypeElementFromSchema($name, array &$checkedImports = array()) {
+	private function findTypeElementFromSchema($name, array &$checkedImports = array()): ?DOMElement
+	{
         $type = null;
 
         $elements = $this->xpath('//s:simpleType[@name=%s]|//s:complexType[@name=%s]', $name, $name);
