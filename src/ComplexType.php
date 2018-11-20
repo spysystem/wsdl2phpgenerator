@@ -42,6 +42,8 @@ class ComplexType extends Type
      */
     protected $abstract;
 
+    protected $bHasDateTimeUseClause	= false;
+
     /**
      * Construct the object
      *
@@ -115,6 +117,11 @@ class ComplexType extends Type
 
             if (!$member->getNullable()) {
                 if ($type === DateTime::class) {
+                	if(!$this->bHasDateTimeUseClause)
+					{
+						$this->class->addUseClause(DateTime::class);
+						$this->bHasDateTimeUseClause	= true;
+					}
                     if ($this->config->get('constructorParamsDefaultToNull')) {
                         $constructorSource .= "\t".'$this->' . $name . ' = $' . $name . ' ? $' . $name . '->format(\DateTime::ATOM) : null;' . PHP_EOL;
                     } else {
