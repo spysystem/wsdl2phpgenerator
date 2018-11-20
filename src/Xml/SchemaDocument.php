@@ -121,8 +121,21 @@ class SchemaDocument extends XmlNode
 			$elements = $this->xpath('//s:element[@name=%s]', $name, $name);
 			if ($elements->length > 0) {
 				$oType = $elements->item(0);
-				if(strpos($oType->firstChild->tagName, 'complexType') !== false) {
-					$type = $oType->firstChild;
+
+				/** @var DOMElement $oElement */
+				$oElement = null;
+
+				/** @var DOMElement $oChildNode */
+				foreach($oType->childNodes as $oChildNode)
+				{
+					if($oChildNode->nodeType === XML_ELEMENT_NODE)
+					{
+						$oElement	= $oChildNode;
+					}
+				}
+
+				if($oElement !== null && strpos($oElement->tagName, 'complexType') !== false) {
+					$type = $oElement;
 				}
 			}
 		}
