@@ -243,13 +243,19 @@ class Service implements ClassGenerator
 			$oCreateComment->addParam(PhpDocElementFactory::getParam('string', 'strPassword', 'Password for Basic Authentication'));
 		}
 
+		if($arrSoapClientOptions['useLocationInsideSoapClientOptions'])
+		{
+			unset($arrSoapClientOptions['useLocationInsideSoapClientOptions']);
+			$arrSoapClientOptions['location']	= 'LOCATION-PLACEHOLDER';
+		}
+
 		$arrParameters[]	= 'string $strURL = self::WsdlUrl';
 		$oCreateComment->addParam(PhpDocElementFactory::getParam('string', 'strURL', 'URL or path for WSDL file'));
 		$oCreateComment->addThrows(PhpDocElementFactory::getThrows('Exception', ''));
 
         $strCreateSource	= '	return new static(' . $this->adjustArrayNotation(var_export($arrSoapClientOptions, true), 1) . ', $strURL);' . PHP_EOL;
 
-        $strCreateSource	= str_replace(["'USERNAME-PLACEHOLDER'", "'PASSWORD-PLACEHOLDER'"], ['$strUsername', '$strPassword'], $strCreateSource);
+        $strCreateSource	= str_replace(["'USERNAME-PLACEHOLDER'", "'PASSWORD-PLACEHOLDER'", "'LOCATION-PLACEHOLDER'"], ['$strUsername', '$strPassword', '$strURL'], $strCreateSource);
 
         $oCreateFunction	= new PhpFunction('public static', 'CreateService', implode(', ', $arrParameters), $strCreateSource, $oCreateComment, $name);
 

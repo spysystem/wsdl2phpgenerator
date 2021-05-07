@@ -245,6 +245,10 @@ $generator->generate(
 
 If enabled, arrays created inside the main Service class will use the Php 5.4+ notation for arrays(using "[]" instead of "array()").
 
+#### `useLocationInsideSoapClientOptions`
+
+If enabled, include the `CreateService(string $strURL)` method will include the given `$strURL` as the `location` option to the SOAP service.
+
 ## Versioning
 
 This project aims to use [semantic versioning](http://semver.org/). The following constitutes the public API:
