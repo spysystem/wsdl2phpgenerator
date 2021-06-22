@@ -5,6 +5,7 @@
  */
 namespace Wsdl2PhpGenerator;
 
+use Exception;
 use Wsdl2PhpGenerator\PhpSource\PhpClass;
 use Wsdl2PhpGenerator\PhpSource\PhpDocComment;
 use Wsdl2PhpGenerator\PhpSource\PhpDocElementFactory;
@@ -51,13 +52,13 @@ class Service implements ClassGenerator
      */
     private $types;
 
-    /**
-     * @param ConfigInterface $config Configuration
-     * @param string $identifier The name of the service
-     * @param array $types The types the service knows about
-     * @param string $description The description of the service
-     */
-    public function __construct(ConfigInterface $config, $identifier, array $types, $description)
+	/**
+	 * @param ConfigInterface $config      Configuration
+	 * @param string          $identifier  The name of the service
+	 * @param array           $types       The types the service knows about
+	 * @param string|null     $description The description of the service
+	 */
+    public function __construct(ConfigInterface $config, string $identifier, array $types, ?string $description)
     {
         $this->config = $config;
         $this->identifier = $identifier;
@@ -71,7 +72,7 @@ class Service implements ClassGenerator
 
 	/**
 	 * @return PhpClass Returns the class, generates it if not done
-	 * @throws \Exception
+	 * @throws Exception
 	 */
     public function getClass(): PhpClass
     {
@@ -89,7 +90,7 @@ class Service implements ClassGenerator
      *
      * @return Operation|null The operation or null if it does not exist.
      */
-    public function getOperation($operationName): ?Operation
+    public function getOperation(string $operationName): ?Operation
 	{
         return $this->operations[$operationName] ?? null;
     }
@@ -121,7 +122,7 @@ class Service implements ClassGenerator
      *
      * @return Type|null The type or null if the type does not exist.
      */
-    public function getType($identifier): ?Type
+    public function getType(string $identifier): ?Type
 	{
         return $this->types[$identifier] ?? null;
     }
@@ -138,9 +139,9 @@ class Service implements ClassGenerator
 	/**
 	 * @param string $strContent
 	 * @param int    $iExtraTabs
-	 * @return mixed
+	 * @return string
 	 */
-	protected function adjustArrayNotation(string $strContent, int $iExtraTabs = 0)
+	protected function adjustArrayNotation(string $strContent, int $iExtraTabs = 0): string
 	{
 		$strReturn	= $this->config->get('bracketedArrays')? str_replace(array('array (', ')'), array('[', ']'), $strContent): $strContent;
 		$strReturn	= preg_replace('/ {2}/m', "\t", $strReturn);
@@ -166,7 +167,7 @@ class Service implements ClassGenerator
 			if(strpos($strLine, '=>') !== false)
 			{
 				$arrTokens      = explode('=>', $strLine);
-				$iCurrentLength = \strlen(trim($arrTokens[0]));
+				$iCurrentLength = strlen(trim($arrTokens[0]));
 				if($iCurrentLength > $iMaxIndexLength)
 				{
 					$iMaxIndexLength	= $iCurrentLength;
@@ -182,7 +183,7 @@ class Service implements ClassGenerator
 			if(strpos($strLine, '=>') !== false)
 			{
 				$arrTokens		= explode('=>', $strLine);
-				$iCurrentLength	= \strlen(trim($arrTokens[0]));
+				$iCurrentLength	= strlen(trim($arrTokens[0]));
 				$iTabsToAdd		= $iMaxTabs - (int)floor($iCurrentLength / 4);
 				$strLine		= rtrim($arrTokens[0]).str_repeat("\t", $iTabsToAdd).'=> '.trim($arrTokens[1]);
 			}
@@ -196,7 +197,7 @@ class Service implements ClassGenerator
 	/**
 	 * Generates the class if not already generated
 	 *
-	 * @throws \Exception
+	 * @throws Exception
 	 */
     public function generateClass(): void
     {
@@ -299,7 +300,6 @@ class Service implements ClassGenerator
 
 		$source	= '
 	$this->request	= $request;
-	
 	return parent::__doRequest($request, $location, $action, $version, $one_way);' . PHP_EOL;
 
 		$function = new PhpFunction('public', '__doRequest', '$request, $location, $action, $version, $one_way = 0', $source, $comment, 'string', true);
@@ -314,7 +314,7 @@ class Service implements ClassGenerator
 		$comment->setReturn(PhpDocElementFactory::getReturn('string', ''));
 
 		$source	= '
-		return $this->request ?? \'\';' . PHP_EOL;
+	return $this->request ?? \'\';' . PHP_EOL;
 
 		$function = new PhpFunction('public', '__getLastRequest', '', $source, $comment, 'string');
 
@@ -334,7 +334,7 @@ class Service implements ClassGenerator
             }
         }
 
-        $strClassMap = $this->adjustArrayNotation(var_export($init, true));
+        $strClassMap	= $this->adjustArrayNotation(var_export($init, true));
 
         $strClassMap	= preg_replace("/=> '(.*)'/m", '=> $1', $strClassMap);
 

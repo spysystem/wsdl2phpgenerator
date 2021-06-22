@@ -5,8 +5,10 @@
  */
 namespace Wsdl2PhpGenerator;
 
-use \Exception;
+use Exception;
 use Wsdl2PhpGenerator\PhpSource\PhpClass;
+use Wsdl2PhpGenerator\PhpSource\PhpDocComment;
+use Wsdl2PhpGenerator\PhpSource\PhpDocElementFactory;
 use Wsdl2PhpGenerator\PhpSource\PhpFile;
 use Wsdl2PhpGenerator\PhpSource\PhpFunction;
 
@@ -38,14 +40,16 @@ class OutputManager
         $this->config = $config;
     }
 
-    /**
-     * Saves the service and types php code to file
-     *
-     * @param PhpClass $service
-     * @param array $types
-     */
-    public function save(PhpClass $service, array $types)
-    {
+	/**
+	 * Saves the service and types php code to file
+	 *
+	 * @param PhpClass $service
+	 * @param array    $types
+	 *
+	 * @throws Exception
+	 */
+    public function save(PhpClass $service, array $types): void
+	{
         $this->setOutputDirectory();
 
         $this->saveClassToFile($service);
@@ -63,13 +67,13 @@ class OutputManager
      *
      * @throws Exception If the dir can't be created and dont already exists
      */
-    private function setOutputDirectory()
-    {
+    private function setOutputDirectory(): void
+	{
         $outputDirectory = $this->config->get('outputDir');
 
         //Try to create output dir if non existing
-        if (is_dir($outputDirectory) == false) {
-            if (mkdir($outputDirectory, 0777, true) == false) {
+        if (!is_dir($outputDirectory)) {
+            if (!mkdir($outputDirectory, 0777, true) || !is_dir($outputDirectory)) {
                 throw new Exception('Could not create output directory and it does not exist!');
             }
         }
@@ -77,14 +81,16 @@ class OutputManager
         $this->dir = $outputDirectory;
     }
 
-    /**
-     * Append a class to a file and save it
-     * If no file is created the name of the class is the filename
-     *
-     * @param PhpClass $class
-     */
-    private function saveClassToFile(PhpClass $class)
-    {
+	/**
+	 * Append a class to a file and save it
+	 * If no file is created the name of the class is the filename
+	 *
+	 * @param PhpClass $class
+	 *
+	 * @throws Exception
+	 */
+    private function saveClassToFile(PhpClass $class): void
+	{
         if ($this->isValidClass($class)) {
             $file = new PhpFile($class->getIdentifier());
 
@@ -100,29 +106,28 @@ class OutputManager
 
     /**
      * Checks if the class is approved
-     * Removes the prefix and suffix for namechecking
+     * Removes the prefix and suffix for name checking
      *
      * @param PhpClass $class
      * @return bool Returns true if the class is ok to add to file
      */
-    private function isValidClass(PhpClass $class)
-    {
+    private function isValidClass(PhpClass $class): bool
+	{
         $classNames = $this->config->get('classNames');
-        return (empty($classNames) || in_array(
-            $class->getIdentifier(),
-            $classNames
-        ));
+        return (empty($classNames) || in_array($class->getIdentifier(), $classNames, true));
     }
 
-    /**
-     * Save a file containing an autoloader for the generated files. Developers can include this when using the
-     * generated classes.
-     *
-     * @param string $name The name of the autoloader. Should be unique for the service to avoid name clashes.
-     * @param PhpClass[] $classes The classes to include in the autoloader.
-     */
-    private function saveAutoloader($name, array $classes)
-    {
+	/**
+	 * Save a file containing an autoloader for the generated files. Developers can include this when using the
+	 * generated classes.
+	 *
+	 * @param string     $name    The name of the autoloader. Should be unique for the service to avoid name clashes.
+	 * @param PhpClass[] $classes The classes to include in the autoloader.
+	 *
+	 * @throws Exception
+	 */
+    private function saveAutoloader(string $name, array $classes): void
+	{
         $autoloaderName = 'autoload_' . md5($name . $this->config->get('namespaceName'));
 
         // The autoloader function we build contain two parts:
@@ -143,21 +148,24 @@ class OutputManager
         // register the autoloader in the global scope. Consequently we manually insert a } to end the autoloader
         // function, register it and finish with a {. This means our generated code ends with a no-op {} statement.
         $autoloaderSource = <<<EOF
-    \$classes = array(
-        $autoloadedClasses
-    );
-    if (!empty(\$classes[\$class])) {
-        include \$classes[\$class];
-    };
-}
+			\$arrClasses	= [
+				$autoloadedClasses
+			];
+			if(!array_key_exists(\$strClass, \$arrClasses))
+			{
+				include \$arrClasses[\$strClass];
+			}
+		}
+		
+		spl_autoload_register('$autoloaderName');
+		
+		// Do nothing. The rest is just leftovers from the code generation.
+		{
+		EOF;
+		$oCreateComment	= new PhpDocComment();
+		$oCreateComment->addParam(PhpDocElementFactory::getParam('string', 'strClass', ''));
 
-spl_autoload_register('$autoloaderName');
-
-// Do nothing. The rest is just leftovers from the code generation.
-{
-EOF;
-
-        $autoloader = new PhpFunction(null, $autoloaderName, '$class', $autoloaderSource);
+        $autoloader = new PhpFunction(null, $autoloaderName, 'string $strClass', $autoloaderSource, $oCreateComment);
         $file = new PhpFile('autoload');
         $file->addFunction($autoloader);
         $file->save($this->dir);

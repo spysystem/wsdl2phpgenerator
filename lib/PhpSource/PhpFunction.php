@@ -48,15 +48,15 @@ class PhpFunction extends PhpElement
 
 	/**
 	 *
-	 * @param string        $access
-	 * @param string        $identifier
-	 * @param string        $params
-	 * @param string        $source
-	 * @param PhpDocComment $comment
-	 * @param string        $strReturn
-	 * @param bool          $bReturnIsNullable
+	 * @param string|null        $access
+	 * @param string             $identifier
+	 * @param string             $params
+	 * @param string             $source
+	 * @param PhpDocComment|null $comment
+	 * @param string             $strReturn
+	 * @param bool               $bReturnIsNullable
 	 */
-    public function __construct($access, $identifier, $params, $source, PhpDocComment $comment = null, string $strReturn = '', bool $bReturnIsNullable = false)
+    public function __construct(?string $access, string $identifier, string $params, string $source, PhpDocComment $comment = null, string $strReturn = '', bool $bReturnIsNullable = false)
     {
         $this->access				= $access;
         $this->identifier			= $identifier;
@@ -94,7 +94,13 @@ class PhpFunction extends PhpElement
 			$strReturn .= $this->return;
 		}
 
-        $ret .= $this->getSourceRow($this->access . ' function ' . $this->identifier . '(' . $this->params . ')'.$strReturn);
+		$strAccess	= (string)$this->access;
+		if($strAccess !== '')
+		{
+			$strAccess	.= ' ';
+		}
+
+        $ret .= $this->getSourceRow($strAccess . 'function ' . $this->identifier . '(' . $this->params . ')'.$strReturn);
         $ret .= $this->getSourceRow('{');
         $ret .= $this->getSourceRow($this->source);
         $ret .= $this->getSourceRow('}');
